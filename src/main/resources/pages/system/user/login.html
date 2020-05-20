@@ -1,0 +1,97 @@
+
+<%
+layout("/common/_container.html"){
+%>
+<link rel="stylesheet" href="/common/css/login.css">
+
+
+<div class="login-wrapper">
+  <div class="login-header" style="width: 50%;margin:200px auto 0;text-align: center;color: white !important;">
+    <img src="${logo}">  ${sysName}
+  </div>
+  <div class="login-body">
+    <div class="layui-card" style="margin-top: 10px;">
+      <div class="layui-card-header">
+        <i class="layui-icon layui-icon-engine"></i>&nbsp;&nbsp;用户登录
+      </div>
+      <form class="layui-card-body layui-form layui-form-pane">
+        <div class="layui-form-item">
+          <label class="layui-form-label"><i class="layui-icon layui-icon-username"></i></label>
+          <div class="layui-input-block">
+            <input name="userName" type="text" placeholder="账号" class="layui-input"
+                   lay-verType="tips" lay-verify="required" required/>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label"><i class="layui-icon layui-icon-password"></i></label>
+          <div class="layui-input-block">
+            <input name="password" type="password" placeholder="密码" autocomplete="new-password" class="layui-input"
+                   lay-verType="tips" lay-verify="required" required/>
+          </div>
+        </div>
+        <div class="layui-form-item" style="margin-bottom: 10px;">
+          <input type="checkbox" name="remember" lay-skin="primary" title="记住密码">
+        </div>
+        <div class="layui-form-item">
+<!--          <a href="/admin/register" class="layui-link">帐号注册</a>-->
+<!--          <a href="javascript:;" class="layui-link pull-right">忘记密码？</a>-->
+        </div>
+        <div class="layui-form-item">
+          <button lay-filter="login-submit" style="background: #d81f3e;" class="layui-btn layui-btn-fluid" lay-submit>登 录</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="login-footer">
+    <p>© 2019 ${sysName} 版权所有</p>
+<!--    <p>-->
+<!--      <span><a href="https://easyweb.vip" target="_blank">获取授权</a></span>-->
+<!--      <span><a href="https://easyweb.vip/doc/" target="_blank">开发文档</a></span>-->
+<!--      <span><a href="https://demo.easyweb.vip/spa/" target="_blank">单页面版</a></span>-->
+<!--    </p>-->
+  </div>
+</div>
+
+
+<script>
+  if (window != top){
+    top.location.href = location.href;
+  }
+
+  var vm = new Vue({
+    el: '#app',
+    data: {
+      msg: 'Hello World!',
+      info:'',
+    },
+    methods: {
+
+    },
+    mounted:async function() {
+      vm = this;
+      // layui.data(admin.tableName, {key: 'openFooter', value: false});
+
+      form.on('submit(login-submit)', function(obj){
+        obj.field.remember=='on'?obj.field.remember=true:obj.field.remember=false;
+        api.login(obj.field).then(res=>{
+          layer.msg('登入成功', {
+            offset: '15px'
+            ,icon: 1
+            ,time: 500
+          }, function(){
+            location.href = '/admin'; //后台主页
+          });
+        })
+        return false;
+      })
+
+      form.render();
+    },
+    updated: function () {
+      form.render();
+    }
+  })
+</script>
+
+<% } %>

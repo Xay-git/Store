@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>${sysName}</title>
+    <link rel="shortcut icon" href="${logo}" type="image/x-icon" />
+    <link rel="stylesheet" href="/common/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="/plugin/module/admin.css"/>
+    <script src="/plugin/vue/vue.min.js"></script>
+    <script src="/plugin/vue/axios.min.js"></script>
+    <script src="/plugin/vue/qs.min.js"></script>
+    <script src="/common/js/request.js?v=${version}"></script>
+    <script src="/modular/js/api.js?v=${version}"></script>
+
+</head>
+<body class="layui-layout-body">
+
+    <div class="layui-layout layui-layout-admin" id="app">
+
+        <!-- _header -->
+        <% include("/common/_header.html"){} %>
+
+        <!-- _left -->
+        <% include("/common/_left.html"){} %>
+
+        <!-- 主体部分 -->
+        <div class="layui-body"></div>
+
+        <!-- _footer -->
+        <% include("/common/_footer.html"){} %>
+
+    </div>
+
+<!-- loading -->
+<% include("/common/loading.html"){} %>
+
+
+<script type="text/javascript">
+    var app = {
+        ctxPath: "",
+        addCtx: function (ctx) {
+            if (this.ctxPath === "") {
+                this.ctxPath = ctx;
+            }
+        }
+    };
+    app.addCtx("${ctxPath}");
+</script>
+<!-- js部分 -->
+<script type="text/javascript" src="/common/libs/layui/layui.js"></script>
+<script type="text/javascript" src="/common/js/common.js?v=${version}"></script>
+<script>
+
+    var $ ;
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            msg: 'Hello World!',
+            info:'',
+            tree:[]
+        },
+        methods: {
+
+        },
+        mounted:async function() {
+            vm = this;
+            vm.tree = await api.getNav();
+            layui.use(['index','jquery'], function () {
+                $ = layui.jquery;
+                var index = layui.index;
+                // 默认加载主页
+                index.loadHome({
+                    menuPath: '/admin/common/console',
+                    menuName: '主页'
+                });
+            });
+        },
+        updated: function () {
+        }
+    })
+
+
+    function getParentIframe(){
+        var iframe = $(".layui-show").find("iframe");
+        return iframe[0].contentWindow;
+    }
+
+    function getParentIframeWindow(){
+        var iframe = $(".layui-show").find("iframe");
+        return iframe;
+    }
+
+    function updateAvatar(filePath,userId){
+        if('${shiroUser.userId}' != userId){ return ;}
+        if(app.isEmpty(filePath)) { filePath='/common/images/avatar/default.png' }
+        $('.layui-layout-right .layui-nav-img').attr("src",filePath);
+    }
+
+</script>
+
+
+</body>
+</html>

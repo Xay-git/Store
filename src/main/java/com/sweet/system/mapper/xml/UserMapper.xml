@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sweet.system.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.sweet.system.entity.User">
+        <id column="USER_ID" property="userId" />
+        <result column="USER_NAME" property="userName" />
+        <result column="PASSWORD" property="password" />
+        <result column="BIRTHDAY" property="birthday" />
+        <result column="ACCOUNT_STATUS" property="accountStatus" />
+        <result column="DEPT_ID" property="deptId" />
+        <result column="AVATAR" property="avatar" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="REAL_NAME" property="realName" />
+        <result column="USER_TYPE" property="userType" />
+    </resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        USER_ID, USER_NAME, PASSWORD, BIRTHDAY, ACCOUNT_STATUS ,DEPT_ID,AVATAR,CREATE_TIME,REAL_NAME,USER_TYPE
+    </sql>
+
+    <select id="findByUserName" resultMap="BaseResultMap">
+        select a.*,b.file_path avatarPath from t_user a left join t_file_info b on a.avatar = b.file_id where user_name = #{userName}
+    </select>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        select a.*,b.file_path avatarPath from t_user a left join t_file_info b on a.avatar = b.file_id where user_id = #{userId}
+    </select>
+
+    <select id="customPageList" resultType="com.sweet.system.model.UserDto" parameterType="com.sweet.system.entity.User">
+        select
+        u.user_id,u.user_name,u.birthday,u.dept_id,u.account_status,u.real_name,d.dept_name
+        from t_user as u left join t_dept as d on u.dept_id = d.dept_id where 1 = 1
+        <if test="param.userName != null and param.userName != ''">
+            and  u.user_name = #{param.deptId}
+        </if>
+
+        <if test="param.deptId != null and param.deptId != ''">
+            and  u.dept_id = #{param.deptId}
+            or u.dept_id in
+            (select dept_id from t_dept where
+            parent_ids like concat('%',#{param.deptId} , '%'))
+        </if>
+        and u.user_type = 1
+        order by u.create_time asc
+    </select>
+
+    <select id="getTechnicians" resultType="com.sweet.system.model.UserDto" >
+       select * from t_user a left join t_user_role b on a.user_id = b.uid where b.rid = 'e9983ea61690cfc70dfd46341b2fc29e'
+        and a.dept_id = #{deptId} order by create_time asc
+    </select>
+
+
+
+
+</mapper>
