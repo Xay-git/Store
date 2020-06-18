@@ -98,6 +98,16 @@
         $('.layui-layout-right .layui-nav-img').attr("src",filePath);
     }
 
+    function openTab(title,url,callback) {
+        layui.index.openTab({
+            title: title,
+            url: url,
+            end: function() {
+                callback()
+            }
+        });
+    }
+
 </script>
 
 
