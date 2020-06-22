@@ -1,0 +1,148 @@
+
+<%
+layout("/common/_container.html"){
+%>
+<style>
+    .el-tree-node__label{
+        font-size: 15px;
+    }
+    .el-tree-node__content{
+        height: 28px;
+    }
+    .tag-view .el-tag{
+        margin: 10px 10px 0 0;
+    }
+</style>
+<div class="layui-fluid" id="app">
+    <div class="layui-row layui-col-space20" style="min-height: calc(100vh - 100px);">
+        <div class="layui-col-md3">
+            <div class="bg-white" style="padding: 20px;">
+                <el-tree
+                        :data="data"
+                        :props="defaultProps"
+                        accordion
+                        @node-click="handleNodeClick">
+                </el-tree>
+            </div>
+        </div>
+        <div class="layui-col-md9">
+            <div class="bg-white" style="padding: 10px;">
+                <blockquote class="layui-elem-quote layui-quote-nm">单击条目选择卖品</blockquote>
+             <table class="layui-table" id="productTable" lay-filter="productTable"></table>
+                <blockquote class="layui-elem-quote layui-quote-nm" style="min-height: 100px;">已选择的卖品：{{productList.length}}个
+
+                    <button type="button" class="layui-btn " style="margin-left: 20px;" @click="chooseDone">选好了 &nbsp;<i class="layui-icon layui-icon-ok "></i></button>
+
+                    <div class="tag-view">
+                        <el-tag
+                                v-for="(tag,index) in productList"
+                                :key="tag.id"
+                                closable
+                                size="medium"
+                                effect="dark"
+                                @close="productList.splice(index,1)"
+                        >
+                            {{tag.name}}
+                        </el-tag>
+                    </div>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+<script>
+    var initColumn =  [[
+        {type: 'radio'},
+        {field:'id',title:'',hide:true},
+        {field:'categoryName',title:'所属分类'},
+        {field:'productNo',title:'项目编号'},
+        {field:'name',title:'名称'},
+        {field:'amount',title:'零售价'},
+        {field:'memberAmount',title:'会员价'},
+        {field:'unit',title:'单位'},
+        {field:'remark',title:'备注'},
+        {field:'createTime',title:'创建时间'},
+        {field:'createName',title:'创建人'},
+        {align: 'center', toolbar: '#tableBar', title: '操作'}
+    ]];
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            msg: 'Hello World!',
+            info:'',
+            data: [{
+                label:'全部',
+                value:''
+            }],
+            defaultProps: {
+                children: 'children',
+                label: 'label'
+            },
+            productList:[
+
+            ]
+        },
+        methods: {
+            chooseDone(){
+                top.getParentIframe().vm.chooseConsumable(vm.productList);
+                var index = top.layer.getFrameIndex(window.name);
+                top.layer.close(index);//关闭当前页
+            },
+            handleNodeClick(data) {
+                var categoryId = data.value;
+                table.reload('productTable',{
+                    where: {
+                        categoryId:categoryId
+                    }, page: {
+                        curr: 1 //重新从第 1 页开始
+                 }});
+            },
+            getCategoryList(){
+                request.fetch("/admin/category/getCategoryByType",{categoryType: 2}).then(res=>{
+                    var array = res;
+                    var result = array.map(o=>{return{value:o.id, label:o.name}});
+                    vm.data = vm.data.concat(result);
+                })
+            }
+        },
+        mounted:async function() {
+            vm = this;
+            vm.getCategoryList();
+
+            table.render({
+                elem: '#productTable',
+                url: '/admin/product/getProductList',
+                page: true,
+                height: "400px",
+                cellMinWidth: 100,
+                limit:20,
+                cols: initColumn,
+                where:{
+                    productType:2
+                }
+            });
+
+            //监听行双击事件
+            table.on('radio(productTable)', function(obj){
+                var array = vm.productList;
+                if(JSON.stringify(array).indexOf(obj.data.id)==-1){
+                    obj.data.count = 0;
+                    vm.productList.push(obj.data);
+                }
+            });
+
+
+            form.render();
+        },
+        updated: function () {
+            form.render();
+        }
+    })
+</script>
+
+<% } %>

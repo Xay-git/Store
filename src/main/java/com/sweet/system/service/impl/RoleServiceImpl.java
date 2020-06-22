@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -46,7 +47,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
-    public List<String> getMenusByRoleId(String roleId) {
+    public List<Map<String,String>> getMenusByRoleId(String roleId) {
         return baseMapper.getMenusByRoleId(roleId);
     }
 

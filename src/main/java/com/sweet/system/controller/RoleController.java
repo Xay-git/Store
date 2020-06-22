@@ -15,7 +15,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -102,8 +105,50 @@ public class RoleController {
     @RequestMapping("/getAuthority")
     @ResponseBody
     public ResultBean getAuthority(String roleId){
-        List<String> list = roleService.getMenusByRoleId(roleId);
-        return ResultBean.success(list);
+        List<Map<String,String>> list = roleService.getMenusByRoleId(roleId);
+        List<String> topMenuList = new ArrayList<>();
+
+        List<String> menuList = new ArrayList<>();
+
+        list.stream().forEach(map->{
+            String pid = map.get("pid");
+            String mid = map.get("mid");
+            if(pid.equals("0")) {
+                topMenuList.add(mid);
+            }else{
+                menuList.add(mid);
+            }
+        });
+
+        //删除集合中值为“a”的数据
+//        top:for (int i = 0; i < topMenuList.size(); i++) {
+//            String topMenuId = topMenuList.get(i);
+//            for (int j = 0; j < list.size(); j++) {
+//                String pid = list.get(j).get("pid");
+//                if(pid.equals(topMenuId)){
+//                    topMenuList.remove(i);
+//                    i--;
+//                    continue top;
+//                }
+//            }
+//        }
+
+        Iterator<String> iterator = topMenuList.iterator();
+        top:while (iterator.hasNext()) {
+            String topMenuId = iterator.next();
+            for (int j = 0; j < list.size(); j++) {
+                String pid = list.get(j).get("pid");
+                if(pid.equals(topMenuId)){
+                    continue top;
+                }
+            }
+        }
+
+
+        a:if(topMenuList!=null){
+            menuList.addAll(topMenuList);
+        }
+        return ResultBean.success(menuList);
     }
     /**
      * 设置角色对应的菜单

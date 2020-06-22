@@ -11,10 +11,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -776,6 +774,14 @@ public class StringUtil {
 			return s;
 		else
 			return (new StringBuilder()).append(Character.toUpperCase(s.charAt(0))).append(s.substring(1)).toString();
+	}
+
+	public static String getNumberForPK(){
+		String id="";
+		SimpleDateFormat sf = new SimpleDateFormat("yyyyMMddHHmm");
+		String temp = sf.format(new Date());
+		id=temp;
+		return id;
 	}
 
 
