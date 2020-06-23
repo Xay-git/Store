@@ -203,7 +203,7 @@
 
                 data.field.productList = JSON.stringify(vm.tableData);
                 console.log(JSON.stringify(data.field))
-                request.post("editStock",data.field).then(res=>{
+                request.post("addStock",data.field).then(res=>{
                     app.success("操作成功！");
                     location.href = 'stock_list'
                 })

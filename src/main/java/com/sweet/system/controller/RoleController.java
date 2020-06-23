@@ -107,9 +107,7 @@ public class RoleController {
     public ResultBean getAuthority(String roleId){
         List<Map<String,String>> list = roleService.getMenusByRoleId(roleId);
         List<String> topMenuList = new ArrayList<>();
-
         List<String> menuList = new ArrayList<>();
-
         list.stream().forEach(map->{
             String pid = map.get("pid");
             String mid = map.get("mid");
@@ -120,32 +118,20 @@ public class RoleController {
             }
         });
 
-        //删除集合中值为“a”的数据
-//        top:for (int i = 0; i < topMenuList.size(); i++) {
-//            String topMenuId = topMenuList.get(i);
-//            for (int j = 0; j < list.size(); j++) {
-//                String pid = list.get(j).get("pid");
-//                if(pid.equals(topMenuId)){
-//                    topMenuList.remove(i);
-//                    i--;
-//                    continue top;
-//                }
-//            }
-//        }
-
         Iterator<String> iterator = topMenuList.iterator();
         top:while (iterator.hasNext()) {
             String topMenuId = iterator.next();
             for (int j = 0; j < list.size(); j++) {
                 String pid = list.get(j).get("pid");
                 if(pid.equals(topMenuId)){
+                    iterator.remove();
                     continue top;
                 }
             }
         }
 
 
-        a:if(topMenuList!=null){
+        if(topMenuList!=null){
             menuList.addAll(topMenuList);
         }
         return ResultBean.success(menuList);

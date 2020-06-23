@@ -12,5 +12,5 @@ import java.math.BigDecimal;
 public class StockDto {
     private Long id;
     private String name;
-    private BigDecimal count;
+    private Long count;
 }
