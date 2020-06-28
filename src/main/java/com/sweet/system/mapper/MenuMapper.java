@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -23,6 +24,9 @@ import java.util.List;
 public interface MenuMapper extends BaseMapper<Menu> {
     // 获取用户菜单集
     List<Menu> findMenuByUserName(@Param("userName") String userName);
+
+    Set<String> findPermissionsByUserName (@Param("userName") String userName);
+
     // 获取所有菜单生成树性菜单使用
     @Select("select MENU_ID id,MENU_NAME title,PARENT_ID pid from t_menu order by create_time asc")
     ArrayList<layTree> getMenuList();
