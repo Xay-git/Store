@@ -28,7 +28,7 @@
                                 <input type="hidden" name="id">
                                 <label class="layui-form-label">领用仓库<span style="color: red;">*</span></label>
                                 <div class="layui-input-inline">
-                                    <input  type="text" v-model="loginUser.deptName" disabled  class="layui-input" lay-verify="required" />
+                                    <input  type="text" v-model="loginUser.deptName" disabled  class="layui-input" />
                                     <input name="deptName" type="hidden" v-model="loginUser.deptName" >
                                     <input name="deptId" type="hidden" v-model="loginUser.deptId" >
                                 </div>
@@ -205,7 +205,7 @@
                 console.log(JSON.stringify(data.field))
                 request.post("addStock",data.field).then(res=>{
                     app.success("操作成功！");
-                    location.href = 'stock_list'
+                    location.href = 'stock_list?type=1'
                 })
                 return false;
             });

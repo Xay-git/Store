@@ -59,7 +59,8 @@
         data: {
             msg: 'Hello World!',
             info:'',
-            tree:[]
+            tree:[],
+            permissions:[]
         },
         methods: {
 
@@ -67,6 +68,8 @@
         mounted:async function() {
             vm = this;
             vm.tree = await api.getNav();
+            vm.permissions = await api.getPermissions();
+            console.log(vm.permissions)
             layui.use(['index','jquery'], function () {
                 $ = layui.jquery;
                 var index = layui.index;

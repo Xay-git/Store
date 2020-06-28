@@ -82,6 +82,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public Set<String> getPermissions(String userName) {
+        return menuMapper.findPermissionsByUserName(userName);
+    }
+
+    @Override
     public LayuiPageInfo findPageBySpec(User user) {
         Page pageContext = getPageContext();
         IPage page = this.baseMapper.customPageList(pageContext, user);

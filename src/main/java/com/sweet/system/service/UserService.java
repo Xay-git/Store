@@ -23,6 +23,8 @@ public interface UserService extends IService<User> {
 
     User findByUserName(String userName);
 
+    Set<String> getPermissions(String userName);
+
     LayuiPageInfo findPageBySpec(User user);
 
     User findUserById(String id);
