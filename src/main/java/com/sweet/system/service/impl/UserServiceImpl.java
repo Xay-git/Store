@@ -71,14 +71,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserName(username);
         user.setPassword(MD5Utils.encrypt(username,DEFAULT_PASSWORD));
         user.setAccountStatus(USER_NORMAL);
-        user.setUserType(ADMIN_USER);
         save(user);
         return user;
     }
 
     @Override
+    public User editUser(User user) {
+        String username = user.getUserName().toLowerCase();
+        User temp = findByUserName(username);
+        if((temp!=null)&&!temp.getUserId().equals(user.getUserId())){
+            throw new ServiceException(ACCOUNT_ALREADY_EXCEPTION);
+        }
+        String password = MD5Utils.encrypt(user.getUserName(), User.DEFAULT_PASSWORD);
+        user.setPassword(password);
+        updateById(user);
+        return user;
+    }
+
+    @Override
     public User findByUserName(String userName) {
+        userName = userName.toLowerCase();
         return userMapper.findByUserName(userName);
+    }
+
+    @Override
+    public User findByUserNo(String userNo, String deptId) {
+        return baseMapper.findByUserNo(userNo,deptId);
     }
 
     @Override

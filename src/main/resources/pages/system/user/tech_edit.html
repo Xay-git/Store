@@ -1,0 +1,187 @@
+<%
+layout("/common/_container.html"){
+%>
+
+<div class="layui-fluid" id="app" style="background:white;">
+    <form id="userFrom" lay-filter="userFrom" class="layui-form model-form">
+
+        <input name="userId" type="hidden" value="${parameter.userId}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工编号<span style="color: red;">*</span></label>
+            <div class="layui-input-block">
+                <input name="userNo" placeholder="员工编号" type="text" class="layui-input" maxlength="50"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工姓名<span style="color: red;">*</span></label>
+            <div class="layui-input-block">
+                <input name="realName" placeholder="真实姓名" type="text" class="layui-input" maxlength="50"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">登录名<span style="color: red;">*</span></label>
+            <div class="layui-input-block">
+                <input name="userName" placeholder="登录名" type="text" class="layui-input" maxlength="50"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">出生日期</label>
+            <div class="layui-input-block">
+                <input id="birthday" readonly name="birthday" placeholder="请选择" type="text" class="layui-input"/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工级别<span style="color: red;">*</span></label>
+            <div class="layui-input-block">
+                <select name="userGrade" lay-verify="required">
+                    <option value="">请选择</option>
+                    <option value="1">普通技师</option>
+                    <option value="2">高级技师</option>
+                </select>
+            </div>
+        </div>
+
+
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                 <input type="checkbox" name="switch" lay-skin="switch" lay-text="在职|离职" checked>
+            </div>
+        </div>
+
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">头像</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn layui-btn-sm" id="upload"><i class="layui-icon"></i>选择图片</button>
+                <div class="layui-upload-list">
+                    <template v-if="imageList.length>0">
+                        <template v-for="(item,index) in imageList">
+                            <div style="display: inline-block;">
+                                <img :src="item.filePath" width="92px" height="92px" style="margin-right: 10px;"><br/><br/>
+                                <button  type="button" v-on:click="app.deleteImg(index,imageList)" style="margin-left: 25px"  class="layui-btn layui-btn-danger layui-btn-xs">删除</button>
+                            </div>
+                        </template>
+                    </template>
+                    <input type="hidden" name="avatar" v-model="app.isNotEmpty(imageList)?getfileIds:''">
+                    <input type="hidden" name="avatarPath" v-model="info.avatarPath">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item text-right" style="margin-top:80px;">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="userFrom" lay-submit>保存</button>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            msg: 'Hello World!',
+            deptId:'${parameter.deptId}',
+            info:'',
+            dept:'',
+            fileIds:'',
+            imageList:[]
+        },
+        methods: {
+
+        },
+        computed:{
+            getfileIds(){
+                var fileIds = '';
+                var list = vm.imageList;
+                if(app.isNotEmpty(list)){
+                    for(let img of list){
+                        fileIds += img.fileId+",";
+                    }
+                    fileIds = fileIds.slice(0,fileIds.length-1);
+                }
+                return fileIds;
+            }
+        },
+        mounted:async function() {
+            vm = this;
+            vm.dept = await request.fetch('/admin/user/deptList');;
+
+            var userRoleIds = [];
+            var userId = '${parameter.userId}';
+            if(app.isNotEmpty(userId)){
+                vm.info = await api.getUserDetail(userId);
+                if(app.isNotEmpty(vm.info.avatar)){
+                    vm.imageList = await api.getFileList(vm.info.avatar);
+                }
+                if(vm.info.accountStatus==1){
+                    vm.info.switch = 'on';
+                }else{
+                    vm.info.switch = '';
+                }
+                form.val('userFrom', vm.info);
+            }
+
+            form.on('submit(userFrom)', function (data) {
+                var _switch = data.field.switch;
+                if(_switch=='on'){
+                    data.field.accountStatus = 1;
+                }else if(_switch=='off'){
+                    data.field.accountStatus = 3;
+                }
+                console.log(JSON.stringify(data.field));
+                api.editTech(data.field).then(res=>{
+                    app.success("操作成功！");
+                    //传给上个页面，刷新table用
+                    admin.putTempData('formOk', true);
+                    //关掉对话框
+                    admin.closeThisDialog();
+                });
+                return false;
+            });
+
+            laydate.render({
+                elem: '#birthday'
+            });
+
+            // 上传
+            upload.render({
+                elem: '#upload',
+                url: '/admin/common/upload',
+                accept: 'images',
+                data: {
+                    fileSavePath:"avatar"
+                },
+                done: function(res, index, upload){ //上传后的回调
+                    app.success("上传成功");
+                    var fileId = res.data.fileId;
+                    var filePath = res.data.filePath;
+                    //  vm.imageList.push(res.data);
+                    Vue.set(vm.imageList,0,res.data)
+                    vm.info.avatarPath = filePath;
+                }
+            });
+
+            admin.iframeAuto();
+
+            form.render();
+        },
+        updated: function () {
+            form.render();
+        }
+    })
+</script>
+<% } %>

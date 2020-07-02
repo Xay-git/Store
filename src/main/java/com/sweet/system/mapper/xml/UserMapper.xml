@@ -14,10 +14,13 @@
         <result column="CREATE_TIME" property="createTime" />
         <result column="REAL_NAME" property="realName" />
         <result column="USER_TYPE" property="userType" />
+        <result column="USER_NO" property="userNo" />
+        <result column="USER_GRADE" property="userGrade" />
+
     </resultMap>
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        USER_ID, USER_NAME, PASSWORD, BIRTHDAY, ACCOUNT_STATUS ,DEPT_ID,AVATAR,CREATE_TIME,REAL_NAME,USER_TYPE
+        USER_ID, USER_NAME, PASSWORD, BIRTHDAY, ACCOUNT_STATUS ,DEPT_ID,AVATAR,CREATE_TIME,REAL_NAME,USER_TYPE,USER_NO,USER_GRADE
     </sql>
 
     <select id="findByUserName" resultMap="BaseResultMap">
@@ -37,18 +40,24 @@
         </if>
 
         <if test="param.deptId != null and param.deptId != ''">
-            and  u.dept_id = #{param.deptId}
+            and  (u.dept_id = #{param.deptId}
             or u.dept_id in
             (select dept_id from t_dept where
-            parent_ids like concat('%',#{param.deptId} , '%'))
+            parent_ids like concat('%',#{param.deptId} , '%')))
         </if>
         and u.user_type = 1
         order by u.create_time asc
     </select>
 
-    <select id="getTechnicians" resultType="com.sweet.system.model.UserDto" >
-       select * from t_user a left join t_user_role b on a.user_id = b.uid where b.rid = 'e9983ea61690cfc70dfd46341b2fc29e'
-        and a.dept_id = #{deptId} order by create_time asc
+    <select id="getTechnicians" resultType="com.sweet.system.entity.User" >
+        select
+        u.user_id,u.user_name,u.birthday,u.dept_id,u.account_status,u.real_name,u.user_no,u.user_grade,d.dept_name
+        from t_user as u left join t_dept as d on u.dept_id = d.dept_id where 1 = 1
+        <if test="deptId != null and deptId != ''">
+            and  u.dept_id = #{deptId}
+        </if>
+        and u.user_type = 2
+        order by u.create_time asc
     </select>
 
 

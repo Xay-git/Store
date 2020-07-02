@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sweet.core.SystemConst.ADMIN_USER;
+import static com.sweet.core.SystemConst.*;
 import static com.sweet.core.exception.enums.SystemExceptionEnum.ACCOUNT_ALREADY_EXCEPTION;
 
 /**
@@ -69,6 +69,15 @@ public class UserController {
         return "/system/user/user_edit";
     }
 
+    @RequestMapping("/tech_list")
+    public String tech_list() {
+        return "/system/user/tech_list";
+    }
+
+    @RequestMapping("/tech_edit")
+    public String tech_edit() {
+        return "/system/user/tech_edit";
+    }
 
     @RequestMapping("/user_password")
     public String user_password() {
@@ -132,6 +141,29 @@ public class UserController {
         }
         if(!StringUtil.isEmpty(roleAssign)){
             userService.setRoleAssign(user.getUserId(),roleAssign);
+        }
+        return ResultBean.success(user);
+    }
+
+
+    @RequestMapping("/editTech")
+    @ResponseBody
+    @Transactional
+    public ResultBean editTech(User user){
+        user.setUserType(TECH_USER);
+        String deptId = ShiroKit.getUser().getDeptId();
+        String userNo = user.getUserNo();
+        User temp = userService.findByUserNo(userNo,deptId);
+        if(StringUtil.isEmpty(user.getUserId())){
+            if(temp!=null){
+                throw new ServiceException("该员工编号已被占用~");
+            }
+            userService.addUser(user);
+        }else{
+            if(temp!=null&&!temp.getUserId().equals(user.getUserId())){
+                throw new ServiceException("该员工编号已被占用~");
+            }
+            userService.editUser(user);
         }
         return ResultBean.success(user);
     }
@@ -225,14 +257,10 @@ public class UserController {
 
     @RequestMapping("/getTechnicians")
     @ResponseBody
-    public ResultBean getTechnicians(){
+    public LayuiPageInfo getTechnicians(){
        String deptId = ShiroKit.getUser().getDeptId();
         LayuiPageInfo pageInfo = userService.getTechnicians(deptId);
-        List<UserDto> list = pageInfo.getData();
-        list.stream().forEach(userDto -> {
-            String userId = userDto.getUserId();
-        });
-       return ResultBean.success(pageInfo.getData());
+       return pageInfo;
     }
 
 }

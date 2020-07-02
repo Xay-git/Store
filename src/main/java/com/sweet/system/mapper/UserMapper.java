@@ -37,6 +37,10 @@ public interface UserMapper extends BaseMapper<User> {
    
     Page<User> getTechnicians(Page page, @Param("deptId") String deptId);
 
+    @Select("select * from t_user where dept_id = #{deptId} and user_no = #{userNo}")
+    User findByUserNo(@Param("userNo") String userNo,@Param("deptId") String deptId);
+
+
 
 
 

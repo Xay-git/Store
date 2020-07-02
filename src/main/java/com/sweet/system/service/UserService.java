@@ -21,7 +21,11 @@ public interface UserService extends IService<User> {
 
     User addUser(User user);
 
+    User editUser(User user);
+
     User findByUserName(String userName);
+
+    User findByUserNo(String userNo,String deptId);
 
     Set<String> getPermissions(String userName);
 
