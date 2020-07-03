@@ -49,7 +49,7 @@
         order by u.create_time asc
     </select>
 
-    <select id="getTechnicians" resultType="com.sweet.system.entity.User" >
+    <select id="getTechnicians" resultType="com.sweet.system.model.UserDto" >
         select
         u.user_id,u.user_name,u.birthday,u.dept_id,u.account_status,u.real_name,u.user_no,u.user_grade,d.dept_name
         from t_user as u left join t_dept as d on u.dept_id = d.dept_id where 1 = 1
