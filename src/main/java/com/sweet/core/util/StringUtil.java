@@ -784,6 +784,15 @@ public class StringUtil {
 		return id;
 	}
 
+	public static String getDateStringNow(){
+		String id="";
+		SimpleDateFormat sf = new SimpleDateFormat("yyyyMMddHHmmss");
+		String temp = sf.format(new Date());
+		id=temp;
+		return id;
+	}
+
+
 
 
 }
