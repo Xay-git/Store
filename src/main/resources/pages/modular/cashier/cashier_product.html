@@ -93,8 +93,7 @@
 
             </td>
             <td>
-                <div v-show="productForm.productType==1">{{productForm.techPushMoney}}</div>
-                <div v-show="productForm.productType==2">{{productForm.techPushMoney}}</div>
+                <div >{{getPushMoney(productForm)}} {{productForm.techPushMoney}}</div>
             </td>
         </tr>
         </tbody>
