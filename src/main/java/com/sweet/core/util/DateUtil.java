@@ -106,6 +106,8 @@ public class DateUtil {
 	 */
 	public static final String DATE_FORMAT_MMDDHHMI = "MM-dd HH:mm";
 
+	public static final String DATE_FORMAT_HHMMSS = "HH:mm:ss";
+
 
 	/* ************工具方法***************   */
 
