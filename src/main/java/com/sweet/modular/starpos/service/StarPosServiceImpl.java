@@ -29,12 +29,11 @@ public class StarPosServiceImpl implements StarPosService{
 
 
     @Override
-    public Map excutePay(String amount, String authCode, String payChannel) {
+    public BarcodePosPay buildPay(String amount, String authCode, String payChannel) {
         BarcodePosPay barcodePosPay = new BarcodePosPay();
         barcodePosPay.setOrgNo(orgNo);
         barcodePosPay.setMercId(mercId);
         barcodePosPay.setTrmNo(StarPosUtil.trmNo);
-
 
         barcodePosPay.setAmount(amount);
         barcodePosPay.setTotal_amount(amount);
@@ -42,6 +41,11 @@ public class StarPosServiceImpl implements StarPosService{
         barcodePosPay.setPayChannel(payChannel);
         barcodePosPay.setTradeNo(IdWorker.get32UUID());
         barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
+        return null;
+    }
+
+    @Override
+    public Map excutePay(BarcodePosPay barcodePosPay) {
         Map posMap = createSignVale(BeanUtil.beanToMap(barcodePosPay));
         System.out.println("提交至starPos"+posMap);
         String res = HttpClientUtil.doPostJson(StarPosUtil.gatewayUrl, JSONUtil.toJsonStr(posMap));
