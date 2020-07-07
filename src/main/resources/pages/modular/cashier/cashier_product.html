@@ -28,6 +28,7 @@
             </td>
             <td>
                 <el-cascader
+                        clearable
                         :ref="'myCascader'+index"
                         @change="handleSelect($event,productForm,'myCascader'+index)"
                         :show-all-levels="false"
@@ -135,7 +136,7 @@
                     <template slot="append">元</template>
                 </el-input>
 
-                &nbsp;&nbsp;&nbsp;<button class="layui-btn layui-btn-sm" @click="posPay(pay.amount)" v-if="pay.payChannel">付</button>
+                &nbsp;&nbsp;&nbsp;<button class="layui-btn layui-btn-sm" @click="posPay(pay)" v-if="pay.payChannel">付</button>
             </td>
         </tr>
         </tbody>
