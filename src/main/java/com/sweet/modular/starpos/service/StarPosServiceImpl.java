@@ -10,24 +10,40 @@ import com.sweet.core.util.StringUtil;
 import com.sweet.modular.starpos.model.BarcodePosPay;
 import com.sweet.modular.starpos.model.RefundBarcodePay;
 import com.sweet.modular.starpos.util.StarPosUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 @Service
 public class StarPosServiceImpl implements StarPosService{
+
+    @Value("${starpos.orgNo}")
+    public String orgNo;
+
+    @Value("${starpos.mercId}")
+    public String mercId;
+
+    @Value("${starpos.signkey}")
+    public String singkey;
+
+
     @Override
     public Map excutePay(String amount, String authCode, String payChannel) {
         BarcodePosPay barcodePosPay = new BarcodePosPay();
+        barcodePosPay.setOrgNo(orgNo);
+        barcodePosPay.setMercId(mercId);
+        barcodePosPay.setTrmNo(StarPosUtil.trmNo);
+
+
         barcodePosPay.setAmount(amount);
         barcodePosPay.setTotal_amount(amount);
         barcodePosPay.setAuthCode(authCode);
-        barcodePosPay.setMercId(StarPosUtil.mercId);
-        barcodePosPay.setOrgNo(StarPosUtil.orgNo);
         barcodePosPay.setPayChannel(payChannel);
         barcodePosPay.setTradeNo(IdWorker.get32UUID());
-        barcodePosPay.setTrmNo(StarPosUtil.trmNo);
         barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
         Map posMap = createSignVale(BeanUtil.beanToMap(barcodePosPay));
+        System.out.println("提交至starPos"+posMap);
         String res = HttpClientUtil.doPostJson(StarPosUtil.gatewayUrl, JSONUtil.toJsonStr(posMap));
         return JSON.parseObject(res);
     }
@@ -35,12 +51,12 @@ public class StarPosServiceImpl implements StarPosService{
     @Override
     public Map refundBarcodePay(String orderNo) {
         RefundBarcodePay barcodePosPay = new RefundBarcodePay();
-        barcodePosPay.setMercId(StarPosUtil.mercId);
-        barcodePosPay.setOrgNo(StarPosUtil.orgNo);
-        barcodePosPay.setTradeNo(IdWorker.get32UUID());
+        barcodePosPay.setOrgNo(orgNo);
+        barcodePosPay.setMercId(mercId);
         barcodePosPay.setTrmNo(StarPosUtil.trmNo);
-        barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
 
+        barcodePosPay.setTradeNo(IdWorker.get32UUID());
+        barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
         barcodePosPay.setOrderNo(orderNo);
         Map posMap = createSignVale(BeanUtil.beanToMap(barcodePosPay));
         System.out.println(JSONUtil.toJsonStr(posMap));
@@ -51,7 +67,7 @@ public class StarPosServiceImpl implements StarPosService{
     public Map createSignVale(Map posMap){
         posMap = StarPosUtil.sortMapByKey(posMap);
         StringBuffer sb =StarPosUtil.getValueStr(posMap);
-        sb.append(StarPosUtil.signkey);
+        sb.append(singkey);
         String signValue= SecureUtil.md5(sb.toString());
         posMap.put("signValue",signValue);
         return posMap;

@@ -18,23 +18,11 @@ public class StarPosUtil {
      * 沙箱环境url
      */
     public static final String sandboxUrl = "http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkBarcodePay.json";
-
-    /**
-     * 机构号
-     */
-    public static final String orgNo = "80645";
-    /**
-     * 商户号
-     */
-    public static final String mercId = "800491000025974";
     /**
      * 设备号
      */
     public static final String trmNo = "XB938277";
-    /**
-     * 设备号
-     */
-    public static final String signkey = "6040D6A005ED41DCAFA67AABE6C72199";
+
 
     /**
      * 使用 Map按key进行排序

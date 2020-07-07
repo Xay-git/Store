@@ -22,7 +22,7 @@ public class AmountUtil {
      * @return
      */
     public static String changeY2F(String amount){
-        return new BigDecimal(amount).multiply(new BigDecimal(100)).toString();
+        return new BigDecimal(amount).multiply(new BigDecimal(100)).stripTrailingZeros().toPlainString();
     }
 
     public static void main(String[] arg){
@@ -30,7 +30,7 @@ public class AmountUtil {
         //普通数值
         System.out.println(changeF2Y("101"));
         //1.01
-        System.out.println(changeY2F("101"));
+        System.out.println(changeY2F("0.01"));
         //10100
 
         //超16位以上数值

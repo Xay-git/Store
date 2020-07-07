@@ -4,10 +4,12 @@ package com.sweet.modular.starpos.model;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @Accessors(chain = true)
 public class StarPos {
+
     /**
      * 操作系统 3直连
      */
