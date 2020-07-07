@@ -65,9 +65,21 @@
                           oninput="app.clearNoNum(this)" placeholder="实际售价"></el-input>
             </td>
             <td>
-                <template >
-                    <el-select :multiple="isMultiple" v-if="update"
-                               v-model="productForm.techId" placeholder="请选择" filterable
+                <template v-if="productForm.productType==1" >
+                    <el-select v-model="productForm.techId" placeholder="请选择" filterable
+                               :key="'techOption'+index">
+                        <el-option
+                                v-for="item in techList"
+                                :key="item.userId"
+                                :label="item.realName"
+                                :value="item.userId"
+                        >
+                        </el-option>
+                    </el-select>
+                </template>
+
+                <template v-if="productForm.productType==2" >
+                    <el-select multiple v-model="productForm.techId" placeholder="请选择" filterable
                                :key="'techOption'+index">
                         <el-option
                                 v-for="item in techList"
@@ -83,8 +95,6 @@
             <td>
                 <div v-show="productForm.productType==1">{{productForm.techPushMoney}}</div>
                 <div v-show="productForm.productType==2">{{productForm.techPushMoney}}</div>
-
-
             </td>
         </tr>
         </tbody>
