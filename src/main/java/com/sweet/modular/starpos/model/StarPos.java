@@ -49,7 +49,9 @@ public class StarPos {
     /**
      * 版本号
      */
-    private String version = "V1.0.0";
+    private String version = "V1.0.1";
+
+
 
 
 

@@ -35,13 +35,14 @@ public class StarPosServiceImpl implements StarPosService{
         barcodePosPay.setMercId(mercId);
         barcodePosPay.setTrmNo(StarPosUtil.trmNo);
 
+
         barcodePosPay.setAmount(amount);
         barcodePosPay.setTotal_amount(amount);
         barcodePosPay.setAuthCode(authCode);
         barcodePosPay.setPayChannel(payChannel);
         barcodePosPay.setTradeNo(IdWorker.get32UUID());
         barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
-        return null;
+        return barcodePosPay;
     }
 
     @Override
@@ -49,6 +50,7 @@ public class StarPosServiceImpl implements StarPosService{
         Map posMap = createSignVale(BeanUtil.beanToMap(barcodePosPay));
         System.out.println("提交至starPos"+posMap);
         String res = HttpClientUtil.doPostJson(StarPosUtil.gatewayUrl, JSONUtil.toJsonStr(posMap));
+
         return JSON.parseObject(res);
     }
 
