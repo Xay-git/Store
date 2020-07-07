@@ -46,13 +46,13 @@ public class StatisticalController {
 
     @RequestMapping("/getstatisticalCardList")
     @ResponseBody
-    public ResultBean select() {
+    public ResultBean select(String beginTime, String endTime) {
         List<Card> list = cardService.list();
         List<CardStatistical> cardStatisticalList  = new ArrayList<>();
         for (Card c : list) {
             CardStatistical caed = new CardStatistical();
-            CardStatistical s = sellService.findSelltypeByid(1,c.getId());
-            CardStatistical g = sellService.findSelltypeByid(2,c.getId());
+            CardStatistical s = sellService.findSelltypeByid(1,c.getId(),beginTime,endTime);
+            CardStatistical g = sellService.findSelltypeByid(2,c.getId(),beginTime,endTime);
             caed.setName(c.getName());
             caed.setCardCount(s.getCardCount());
             caed.setCardUserCount(s.getCardUserCount());
