@@ -120,6 +120,7 @@
             <td v-if="index==0">
                 <el-input placeholder="请输入金额" v-model="pay.amount" :key="index"
                           :disabled="JSON.stringify(memberCard)=='{}'"
+                          readonly
                           @input="clearNoNum(pay.amount,index,'productPay')">
                     <template slot="append">元</template>
                 </el-input>
@@ -129,7 +130,7 @@
             </td>
 
             <td v-else>
-                <el-input placeholder="请输入金额" v-model="pay.amount" :key="index" :disabled="pay.hide"
+                <el-input placeholder="请输入金额" v-model="pay.amount" :key="index"  :readonly="getTotalAmount==0"
                           @input="clearNoNum(pay.amount,index,'productPay')">
                     <template slot="append">元</template>
                 </el-input>
