@@ -1,0 +1,104 @@
+<div v-if="selectIndex==1" class="container-cashier">
+    <div style="padding: 10px;">
+        <table class="layui-table md-table">
+            <colgroup>
+                <col width="14.2%">
+                <col width="14.2%">
+                <col width="14.2%">
+                <col width="14.2%">
+                <col width="14.2%">
+                <col>
+            </colgroup>
+            <thead>
+            <tr>
+                <th>卡种</th>
+                <th>开卡金额</th>
+                <th>赠送金额</th>
+                <th>商品折扣</th>
+                <th>项目折扣</th>
+                <th>服务人员</th>
+                <th>提成</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <el-select @change="cardSelect($event,cardForm)" v-model="cardForm.id" placeholder="请选择"
+                               filterable>
+                        <el-option
+                                v-for="item in cardList"
+                                :key="item.id"
+                                :label="item.name"
+                                :value="item.id"
+                        >
+                        </el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <el-input type="text" v-model="cardForm.amount" oninput="app.clearNoNum(this)"
+                              placeholder="开卡金额"></el-input>
+                </td>
+                <td>
+                    <el-input type="text" v-model="cardForm.giveAmount" oninput="app.clearNoNum(this)"
+                              placeholder="赠送金额"></el-input>
+                </td>
+                <td>
+                    <el-input type="text" v-model="cardForm.projectDiscount" oninput="app.clearNoNum(this)"
+                              placeholder="项目折扣"></el-input>
+                </td>
+                <td>
+                    <el-input type="text" v-model="cardForm.goodDiscount" oninput="app.clearNoNum(this)"
+                              placeholder="商品折扣"></el-input>
+                </td>
+                <td>
+                    <el-select :multiple="true" v-model="cardForm.techId" placeholder="请选择" filterable>
+                        <el-option
+                                v-for="item in techList"
+                                :key="item.userId"
+                                :label="item.realName"
+                                :value="item.userId"
+                        >
+                        </el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <div>{{cardForm.techPushMoney}}</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table class="layui-table pay-table" style="margin-top: 20px;">
+            <colgroup>
+                <col width="10%">
+                <col>
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>应收金额</td>
+                <td class="text-orange" style="font-weight: bold;">￥
+                    <span v-if="cardForm.amount">{{app.getFloatStr(getBuildCardAmout)}}</span>
+                    <span v-else>0.00</span>
+                </td>
+            </tr>
+            <tr v-for="(pay,index) in cardPay">
+                <td>{{pay.payName}}</td>
+                <td>
+                    <el-input placeholder="请输入金额" v-model="pay.amount"
+                              @input="clearNoNum(pay.amount,index,'cardPay')">
+                        <template slot="append">元</template>
+                    </el-input>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="padding: 10px;  ">
+            <button type="button" class="layui-btn layui-btn-lg btn-color" @click="cardSubmit">结算</button>
+            <button type="button" class="layui-btn layui-btn-normal layui-btn-lg"
+                    @click="cardSubmit('product')">结算并收银
+            </button>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,138 @@
+<div style="padding: 10px;" v-if="selectIndex==0" class="container-cashier">
+    <table class="layui-table md-table ">
+        <colgroup>
+            <col width="5%">
+            <col width="15.8%">
+            <col width="15.8%">
+            <col width="15.8%">
+            <col width="15.8%">
+            <col width="15.8%">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>操作</th>
+            <th>项目/卖品</th>
+            <th>单价</th>
+            <th>折扣</th>
+            <th>实际售价</th>
+            <th>服务人员</th>
+            <th>提成</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(productForm,index) in productFormList">
+            <td>
+                <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                           @click=" delProduct(index);"></el-button>
+            </td>
+            <td>
+                <el-cascader
+                        :ref="'myCascader'+index"
+                        @change="handleSelect($event,productForm,'myCascader'+index)"
+                        :show-all-levels="false"
+                        placeholder="选择项目/卖品 "
+                        :props="{ expandTrigger: 'hover' }"
+                        :options="products"
+                        filterable
+                        v-model="productForm.cascader"
+                        :key="'myCascader'+index"
+                >
+                    <template slot-scope="{ node, data }">
+                                    <span>  {{ data.label }}
+                                        <template v-if="node.isLeaf">
+                                            <i>{{memberCard.amount?'会员价： '+data.other.memberAmount:data.other.amount}}元</i>
+                                        </template>
+
+                                        <template v-if="node.level==3&&node.parent.parent.data.value=='product'">
+                                            <i>库存:{{data.other.count}}</i>
+                                        </template>
+                                    </span>
+                        <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                    </template>
+                </el-cascader>
+            </td>
+            <td>
+                <el-input type="text" v-model="productForm.amount" oninput="app.clearNoNum(this)"
+                          placeholder="原价"></el-input>
+            </td>
+            <td>
+                <el-input type="text" v-model="productForm.discount" placeholder="折扣"></el-input>
+            </td>
+            <td>
+                <el-input type="text"
+                          :value="getRealAmount(productForm,productForm.amount,productForm.discount)"
+                          oninput="app.clearNoNum(this)" placeholder="实际售价"></el-input>
+            </td>
+            <td>
+                <template >
+                    <el-select :multiple="isMultiple" v-if="update"
+                               v-model="productForm.techId" placeholder="请选择" filterable
+                               :key="'techOption'+index">
+                        <el-option
+                                v-for="item in techList"
+                                :key="item.userId"
+                                :label="item.realName"
+                                :value="item.userId"
+                        >
+                        </el-option>
+                    </el-select>
+                </template>
+
+            </td>
+            <td>
+                <div v-show="productForm.productType==1">{{productForm.techPushMoney}}</div>
+                <div v-show="productForm.productType==2">{{productForm.techPushMoney}}</div>
+
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button type="button" class="layui-btn layui-btn-normal" @click="addProductForm"
+            style="margin-top: 15px;">添加一行( F6 )
+    </button>
+    <table class="layui-table pay-table" style="margin-top: 20px;">
+        <colgroup>
+            <col width="10%">
+            <col>
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>应收金额</td>
+            <td class="text-orange" style="font-weight: bold;">￥
+                <span v-if="productFormList[0].amount">{{app.getFloatStr(getTotalAmount)}}</span>
+                <span v-else>0.00</span>
+            </td>
+        </tr>
+
+        <tr v-for="(pay,index) in productPay">
+            <td>{{pay.payName}}</td>
+            <td v-if="index==0">
+                <el-input placeholder="请输入金额" v-model="pay.amount" :key="index"
+                          :disabled="JSON.stringify(memberCard)=='{}'"
+                          @input="clearNoNum(pay.amount,index,'productPay')">
+                    <template slot="append">元</template>
+                </el-input>
+                <template v-if="memberCard.amount">&nbsp; 剩余 <span class="text-red">{{app.Subtr(memberCard.amount,pay.amount)}}</span>
+                    元
+                </template>
+            </td>
+
+            <td v-else>
+                <el-input placeholder="请输入金额" v-model="pay.amount" :key="index" :disabled="pay.hide"
+                          @input="clearNoNum(pay.amount,index,'productPay')">
+                    <template slot="append">元</template>
+                </el-input>
+
+                &nbsp;&nbsp;&nbsp;<button class="layui-btn layui-btn-sm" @click="posPay(pay.amount)">付</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div style="padding: 10px;  ">
+        <button type="button" class="layui-btn layui-btn-lg btn-color" @click="productSubmit">结算</button>
+        <el-checkbox v-model="printchecked" style="margin-left: 20px;">打印小票</el-checkbox>
+    </div>
+</div>

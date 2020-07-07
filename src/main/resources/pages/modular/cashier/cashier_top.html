@@ -1,0 +1,47 @@
+<div class="layui-row" style="height: 170px;">
+    <div class="layui-col-md5 ml" style="border-top: 1px solid #e0e2e9;">
+        <div class="flexcenter" style="width: 30%;">
+            <img src="/common/images/default.jpg"/>
+        </div>
+        <div class="ml1" style="width: 70%;color: #444444;">
+            <div>
+                <p style="font-size: 20px;margin-top: 15px;">{{member.name}}<span style="font-size: 14px;">[{{member.sex==1?'先生':'女士'}}]</span>
+                </p>
+                <p style="border-bottom: 1px dashed #eee"><i class="layui-icon layui-icon-cellphone">
+                    {{member.phoneNumber}}</i></p>
+            </div>
+            <div class="card">
+                <div v-if="memberCard.id">
+                    <h2><b class="blue">折扣卡</b> <span style="margin-left: 10px;">{{memberCard.name}}</span>
+                        <el-popover
+                                placement="bottom"
+                                title="折扣卡"
+                                width="200"
+                                trigger="click"
+                                v-model="visible"
+                        >
+                            <div>
+                                <div class="card-view text-hov hov" v-for='(item,index) in memberCardList'
+                                     @click="chooseMemberCard(index)">
+                                    {{item.name}}<i class="text-red"> 余额：{{item.amount}}</i>
+                                </div>
+                            </div>
+                            <small slot="reference"> <a class="text-green text-hov">[重新选择]</a></small>
+                        </el-popover>
+                    </h2>
+                    <p>
+                        <span>卡金：<i class="text-red"> {{memberCard.amount}} </i>元</span> &nbsp;| &nbsp;
+                        <span>项目：<i class="text-red"> {{memberCard.projectDiscount}} </i>折</span> &nbsp;|
+                        &nbsp;
+                        <span>卖品：<i class="text-red"> {{memberCard.goodDiscount}} </i>折</span>
+                    </p>
+                </div>
+                <div v-else>暂未开卡 &nbsp;<a class="text-green text-hov" @click="selectIndex=1">[去开卡]</a></div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md7">
+        <div class="top-links text-right"><a @click="openRight('first')">个人资料</a><a
+                @click="openRight('first')">卡券信息</a><a @click="openRight('second')">消费记录</a></div>
+    </div>
+</div>
