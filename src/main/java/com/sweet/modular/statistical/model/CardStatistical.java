@@ -3,6 +3,7 @@ package com.sweet.modular.statistical.model;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class CardStatistical {
@@ -22,5 +23,7 @@ public class CardStatistical {
     private BigDecimal chargedAmount;
     //续卡赠送总额
     private BigDecimal chargedGiveAmount;
+
+    private List<CardDateDetails> cardDateDetailsList;
 
 }
