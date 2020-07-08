@@ -56,7 +56,7 @@
         <if test="deptId != null and deptId != ''">
             and  u.dept_id = #{deptId}
         </if>
-        and u.user_type = 2
+        and u.user_type = 2  and u.account_status = 1
         order by u.create_time asc
     </select>
 
