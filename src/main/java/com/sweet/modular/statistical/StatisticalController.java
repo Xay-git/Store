@@ -10,7 +10,10 @@ import com.sweet.modular.selldetail.service.SelldetailService;
 import com.sweet.modular.statistical.model.CardDateDetails;
 import com.sweet.modular.statistical.model.CardStatistical;
 import com.sweet.modular.statistical.model.CategoryStatistical;
+import com.sweet.modular.statistical.model.UserTechStatistical;
 import com.sweet.modular.statistical.service.StatisticalService;
+import com.sweet.system.entity.User;
+import com.sweet.system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,6 +44,8 @@ public class StatisticalController {
     SelldetailService selldetailService;
     @Autowired
     SellService sellService;
+    @Autowired
+    UserService userService;
 
     @RequestMapping("")
     public String statistical() {
@@ -100,5 +105,24 @@ public class StatisticalController {
     public ResultBean CategoryStatistical(Integer type,String beginTime, String endTime) {
         List<CategoryStatistical> list = statisticalService.findCategoryStatistical(type,beginTime,endTime);
         return ResultBean.success(0, "success", list);
+    }
+
+    @RequestMapping("/UserTechStatistical")
+    @ResponseBody
+    public ResultBean findUserTechStatistical(String beginTime, String endTime) {
+        List<User> users = userService.query().eq("ACCOUNT_STATUS",1).ne("USER_GRADE","").list();
+        List<UserTechStatistical> ulist = new ArrayList<>();
+        for(User u:users){
+            List<UserTechStatistical> list = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),1,beginTime,endTime);
+            List<UserTechStatistical> list1 = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),2,beginTime,endTime);
+            List<UserTechStatistical> list3 = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),3,beginTime,endTime);
+            if(list.size()>0){
+                ulist.addAll(list);
+                ulist.addAll(list1);
+                ulist.addAll(list3);
+            }
+        }
+
+        return ResultBean.success(ulist);
     }
 }
