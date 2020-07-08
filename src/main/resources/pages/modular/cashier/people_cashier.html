@@ -1,1 +1,749 @@
-<%layout("/common/_container.html"){%><link rel="stylesheet" href="/modular/css/cashier.css" media="all"><div id="app" >    <div class="layui-card main" style="min-height:calc(90vh - 10px)">        <div >            <hr/>            <div class="tabs cashier-tabs">                <a class="tab" :class="selectIndex==index?'active':''" v-for="(item,index) in cashierTabs" @click="selectIndex=index">{{item.title}}</a>            </div>            <div style="padding: 10px;" v-if="selectIndex==0"  class="container-cashier">                <table class="layui-table md-table" >                    <colgroup>                        <col width="5%">                        <col width="15.8%">                        <col width="15.8%">                        <col width="15.8%">                        <col width="15.8%">                        <col width="15.8%">                        <col>                    </colgroup>                    <thead>                    <tr>                        <th>操作</th>                        <th>编号</th>                        <th>项目/卖品</th>                        <th>单价</th>                        <th>折扣</th>                        <th>实际售价</th>                        <th>服务人员</th>                    </tr>                    </thead>                    <tbody>                    <tr v-for="(productForm,index) in productFormList">                        <td><el-button type="danger" size="mini" icon="el-icon-delete" circle @click=" delProduct(index);"></el-button></td>                        <td><input type="text" v-model="productForm.productNo"  @focus="seletDropdown($event,'protop','proleft','proshow',index)" @blur="blurDropdown('proshow')" placeholder="选择商品"></td>                        <td><input type="text" v-model="productForm.name" readonly placeholder="商品编号" ></td>                        <td><input type="text" v-model="productForm.amount"  oninput="app.clearNoNum(this)" placeholder="原价"></td>                        <td><input type="text" v-model="productForm.discount"  placeholder="折扣"></td>                        <td><input type="text" :value="getRealAmount(productForm,productForm.amount,productForm.discount)"  oninput="app.clearNoNum(this)" placeholder="实际售价"></td>                        <td><input type="text" v-model="productForm.techName"  placeholder="选择服务人员" @focus="seletDropdown($event,'techtop1','techleft1','techshow1',index)" @blur="blurDropdown('techshow1')"></td>                    </tr>                    </tbody>                </table>                <button type="button" class="layui-btn layui-btn-normal" @click="addProductForm">添加一行</button>                <table class="layui-table pay-table"   style="margin-top: 20px;">                    <colgroup>                        <col width="10%">                        <col>                    </colgroup>                    <tbody>                    <tr>                        <td >应收金额</td>                        <td class="text-orange" style="font-weight: bold;">￥                            <span v-if="productFormList[0].amount">{{app.getFloatStr(getTotalAmount)}}</span>                            <span v-else>0.00</span>                        </td>                    </tr>                    <tr v-for="(pay,index) in productPay" v-if="index!=0">                        <td >{{pay.payName}}</td>                        <td >                            <el-input  placeholder="请输入金额" v-model="pay.amount"  @input="clearNoNum(pay.amount,index,'productPay')">                                <template slot="append">元</template>                            </el-input>                            <template  v-if="memberCard.amount">&nbsp; 剩余 <span class="text-red">{{app.Subtr(memberCard.amount,pay.amount)}}</span> 元</template>                        </td>                    </tr>                    </tbody>                </table>                <div style="padding: 10px;  ">                    <button type="button" class="layui-btn layui-btn-lg btn-color" @click="productSubmit">结算</button>                </div>            </div>        </div>        <!-- 开卡 -->        <div v-if="selectIndex==1" class="container-cashier">            <div style="padding: 10px;">                <table class="layui-table md-table" >                    <colgroup>                        <col width="16.6%">                        <col width="16.6%">                        <col width="16.6%">                        <col width="16.6%">                        <col width="16.6%">                        <col>                    </colgroup>                    <thead>                    <tr>                        <th>卡种</th>                        <th>开卡金额</th>                        <th>赠送金额</th>                        <th>商品折扣</th>                        <th>项目折扣</th>                        <th>服务人员</th>                    </tr>                    </thead>                    <tbody>                    <tr>                        <td><input type="text" v-model="cardForm.name"  @focus="seletDropdown($event,'cardtop','cardleft','cardshow')" @blur="blurDropdown('cardshow')" placeholder="选择卡项"></td>                        <td><input type="text" v-model="cardForm.amount"  oninput="app.clearNoNum(this)" placeholder="开卡金额"></td>                        <td><input type="text" v-model="cardForm.giveAmount"  oninput="app.clearNoNum(this)" placeholder="赠送金额"></td>                        <td><input type="text" v-model="cardForm.projectDiscount" oninput="app.clearNoNum(this)"  placeholder="项目折扣"></td>                        <td><input type="text" v-model="cardForm.goodDiscount" oninput="app.clearNoNum(this)"  placeholder="商品折扣"></td>                        <td><input type="text" v-model="cardForm.techName"  placeholder="选择服务人员" @focus="seletDropdown($event,'techtop','techleft','techshow')" @blur="blurDropdown('techshow')"></td>                    </tr>                    </tbody>                </table>                <table class="layui-table pay-table"   style="margin-top: 20px;">                    <colgroup>                        <col width="10%">                        <col>                    </colgroup>                    <tbody>                    <tr>                        <td >应收金额</td>                        <td class="text-orange" style="font-weight: bold;">￥                            <span v-if="cardForm.amount">{{app.getFloatStr(getBuildCardAmout)}}</span>                            <span v-else>0.00</span>                        </td>                    </tr>                    <tr v-for="(pay,index) in cardPay">                        <td >{{pay.payName}}</td>                        <td>                            <el-input placeholder="请输入金额" v-model="pay.amount" @input="clearNoNum(pay.amount,index,'cardPay')">                                <template slot="append">元</template>                            </el-input>                        </td>                    </tr>                    </tbody>                </table>                <div style="padding: 10px;  ">                    <button type="button" class="layui-btn layui-btn-lg btn-color" @click="cardSubmit">结算</button>                    <button type="button" class="layui-btn layui-btn-normal layui-btn-lg">结算并收银</button>                </div>            </div>        </div>        <div v-if="selectIndex==2">            <div style="padding: 10px;">                <table class="layui-table" lay-skin="line">                    <colgroup>                        <col width="150">                        <col width="150">                        <col width="200">                        <col>                    </colgroup>                    <thead>                    <tr>                        <th>编号</th>                        <th>项目</th>                        <th>单价</th>                        <th>折扣</th>                        <th>实际售价</th>                        <th>员工</th>                    </tr>                    </thead>                    <tbody>                    <tr>                        <td onclick="test(this)">贤心</td>                        <td>汉族</td>                        <td>1989-10-14</td>                        <td>人生似修行</td>                    </tr>                    </tbody>                </table>            </div>        </div>        <!--商品项目弹出层-->        <div  class="md-filter-dropdown dropdown-project" :style='{top:protop+"px",left:proleft+"px",display:proshow?"block":"none"}' style=" left: 50px; width: 70%;padding: 15px;">            <div class="fd-arrow" style="left: 92.5px;"></div>            <div style="font-size: 16px;font-weight: bold;" v-if="JSON.stringify(products['project'])!='{}'">                项目:            </div>            <ul>                <li v-for="(value,key) in products['project']" >                    <div class="title">                        <span>{{key}}：</span>                    </div>                    <div>                        <div class="item" v-for="item in value" @mousedown="chooseProduct(item,'project')">                            <i>[{{item.productNo}}]</i>{{item.name}}<span class="text-green">&nbsp;{{item.amount}}元</span><span class="text-red">(会员价：{{item.memberAmount}})</span>                        </div>                    </div>                </li>            </ul>            <div style="font-size: 16px;font-weight: bold;" v-if="JSON.stringify(products['product'])!='{}'" >                卖品:            </div>            <ul>                <li v-for="(value,key) in products['product']" v-if="value.length>0">                    <div class="title">                        <span>{{key}}：</span>                    </div>                    <div>                        <div class="item" v-for="item in value" @mousedown="chooseProduct(item,'product')" style="width: 160px;">                            <i>[{{item.productNo}}]</i>{{item.name}}<span class="text-green">&nbsp;{{item.amount}}元</span><span class="text-red">(会员价：{{item.memberAmount}}&nbsp;&nbsp; 库存：{{item.count}})</span>                        </div>                    </div>                </li>            </ul>        </div>        <!--卡项弹出层-->        <div  class="md-filter-dropdown dropdown-project" :style='{top:cardtop+"px",left:cardleft+"px",display:cardshow?"block":"none"}' style=" left: 50px; width: 70%;">            <div class="fd-arrow" style="left: 92.5px;"></div>            <ul>                <li >                    <div class="title">                        <span>折扣卡：</span>                    </div>                    <div>                        <div class="item" v-for="item in cardList" @mousedown="chooseCard(item)">                            <i>[{{item.no}}]</i>{{item.name}}                        </div>                    </div>                </li>            </ul>        </div>        <!--技师弹出层-->        <div  class="md-filter-dropdown dropdown-project" :style='{top:techtop1+"px",left:techleft1+"px",display:techshow1?"block":"none"}' style=" width: 15%;">            <div class="fd-arrow" style="left: 92.5px;"></div>            <ul>                <li >                    <div class="title">                        <span>技师：</span>                    </div>                    <div>                        <div class="item" v-for="item in techList" @mousedown="chooseTech1(item)">                            <i>[{{item.userName}}]</i>{{item.realName}}                        </div>                    </div>                </li>            </ul>        </div>        <!--技师弹出层-->        <div  class="md-filter-dropdown dropdown-project" :style='{top:techtop+"px",left:techleft+"px",display:techshow?"block":"none"}' style=" width: 15%;">            <div class="fd-arrow" style="left: 92.5px;"></div>            <ul>                <li >                    <div class="title">                        <span>技师：</span>                    </div>                    <div>                        <div class="item" v-for="item in techList" @mousedown="chooseTech2(item)">                            <i>[{{item.userName}}]</i>{{item.realName}}                        </div>                    </div>                </li>            </ul>        </div>    </div></div></div><script>    var productPayCopy = '';    var cardPayCopy = '';    //创建定时器    var timer;    var vm = new Vue({        el: '#app',        data(){            return{                visible:false,                selectIndex:'0',                cashierTabs:[                    {title:'综合收银'}                ],                //联想输入                queryString:'',                //联想输入结果                result:{list:[]},                //当前选择的会员                member:{},                //会员拥有的卡列表                memberCardList:[],                memberCard:{},                //商品集合                productFormList:[                    {productNo:'',id:'',name:'',amount:'',techId:'',techName:'',discount:'',realAmount:''}],                productIndex:0,                products:{},                protop:'',                proleft:'',                proshow:false,                //技师弹窗距离顶部的位置                techtop1:0,                techleft1:0,                //显示技师弹窗                techshow1:false,                //技师弹窗距离顶部的位置                techtop:0,                techleft:0,                //显示技师弹窗                techshow:false,                //技师列表                techList:[],                //卡项弹窗距离顶部的位置                cardtop:0,                cardleft:0,                //显示card弹窗                cardshow:false,                //卡项列表                cardList:[],                //开卡form                cardForm:{id:'',name:'',amount:'',giveAmount:'',goodDiscount:'',projectDiscount:'',techName:'',techId:''},                //支付方式                productPay:[                    {payName:'卡金',amount:'',payType:0},                    {payName:'现金',amount:'',payType:1},                    {payName:'银联',amount:'',payType:2},                    {payName:'支付宝支付',amount:'',payType:3},                    {payName:'微信支付',amount:'',payType:4},                    {payName:'其他',amount:'',payType:5},                    {payName:'优惠',amount:'',payType:6},                ],                //开卡支付方式                cardPay:[                    {payName:'现金',amount:'',payType:1},                    {payName:'银联',amount:'',payType:2},                    {payName:'支付宝支付',amount:'',payType:3},                    {payName:'微信支付',amount:'',payType:4},                    {payName:'其他',amount:'',payType:5},                    {payName:'优惠',amount:'',payType:6},                ]            }        },        computed:{            getTotalAmount(){                var totalAmount = 0;                for(let item of vm.productFormList){                    var realAmount = item.realAmount;                    if(realAmount!=undefined){                        totalAmount = app.accAdd(totalAmount,realAmount);                    }                }                if(vm.productFormList.length>0){                    if(vm.memberCard.amount!=undefined){                        if(vm.memberCard.amount>totalAmount){                            vm.productPay[0].amount = totalAmount;                        }else{                            vm.productPay[0].amount = vm.memberCard.amount;                            vm.productPay[1].amount = app.Subtr(totalAmount,vm.memberCard.amount);                        }                    }else{                        vm.productPay[1].amount = totalAmount;                    }                }                return Number(totalAmount);            },            getBuildCardAmout(){                var totalAmount = 0;                if(app.isNotEmpty(vm.cardForm.amount)){                    totalAmount = vm.cardForm.amount;                }                if(totalAmount>0){                    vm.cardPay[0].amount = totalAmount;                }                return totalAmount;            }        },        methods: {            getRealAmount(productForm,amount,discount){                if(app.isEmpty(amount)){                    return ;                }                var realAmount = app.accMul(amount,app.accMul(discount,0.1))                productForm.realAmount = realAmount;                return realAmount            },            resetProductForm(){                for(let index in vm.productFormList){                    Vue.set(vm.productFormList[index],'productNo','');                    Vue.set(vm.productFormList[index],'id','');                    Vue.set(vm.productFormList[index],'name','');                    Vue.set(vm.productFormList[index],'amount','');                    Vue.set(vm.productFormList[index],'techId','');                    Vue.set(vm.productFormList[index],'techName','');                    Vue.set(vm.productFormList[index],'discount','');                    Vue.set(vm.productFormList[index],'realAmount','');                }                vm.productFormList = vm.productFormList.splice(0,1);                for(let index in  vm.productPay){                    Vue.set(vm.productPay[index],'amount','');                    Vue.set(vm.productPay[index],'hide',false);                }                vm.getProduct();            },            productSubmit(){                var flag = app.ArrayObjIsNotEmpty(vm.productFormList);                if(!flag){                    app.error("请完善表单内容~");                    return;                }                var pay = new Array();                for (let i of vm.productPay){                    if(i.amount>0){                        pay.push(i);                    }                }                var data = {                    user:JSON.stringify(vm.member),                    productFormList:JSON.stringify(vm.productFormList),                    pay:JSON.stringify(pay),                    sellAmount:vm.getTotalAmount,                    memberCard:JSON.stringify(vm.memberCard)                }                request.post("/admin/cashier/productSubmit",data).then(res=>{                    app.success("结算成功！");                    vm.resetProductForm();                    $(window.parent.document).find('html,body').animate({scrollTop:'0px'},'100')                })            },            delProduct(index){                if(vm.productFormList.length==1){                    app.error("不能再删除了~");                    return;                }                vm.productFormList.splice(index,1);            },            addProductForm(){                var len =  vm.productFormList.length;                if(vm.productFormList[len-1].productNo==undefined){                    app.error("请完善上一行数据~");                    return ;                }                vm.productFormList.push({});                var iframe =  $("#iframe1", window.parent.document);                iframe.height(iframe.height()+100);            },            //得到smart联想输入的值            getItem (data){                vm.member = data;                vm.queryString = ''                $('#smartInput').val('');            },            search(data){                vm.queryString = data            },            getMemberCardList(){                request.fetch("/admin/member/getMemberCardList",{memberId:vm.member.id}).then(res=>{                    vm.memberCardList = res                    if(vm.memberCardList.length>0){                        vm.memberCard =  vm.memberCardList[0];                    }else{                        vm.memberCard = {};                    }                })            },            //打开卡项菜单            seletDropdown(e,top,left,show,index){                vm[top] =  $(e.target).offset().top +30;                vm[left] = $(e.target).offset().left;                vm[show] = true;                if(index!=undefined){                    vm.productIndex = index;                }            },            //关闭卡项菜单            blurDropdown(show){                vm[show] = false;            },            //选择卡项            chooseCard(item){                vm.cardForm = JSON.parse(JSON.stringify(item));            },            chooseTech1(item){                vm.productFormList[vm.productIndex].techId = item.userId;                vm.productFormList[vm.productIndex].techName = item.realName;            },            chooseTech2(item){                vm.cardForm.techId = item.userId;                vm.cardForm.techName = item.realName;            },            //选择会员用哪张卡            chooseMemberCard(index){                vm.memberCard = vm.memberCardList[index];                vm.visible = false;            },            chooseProduct(item,type){                Vue.set(vm.productFormList[vm.productIndex],'productNo',item.productNo);                Vue.set(vm.productFormList[vm.productIndex],'id',item.id);                Vue.set(vm.productFormList[vm.productIndex],'name',item.name);                Vue.set(vm.productFormList[vm.productIndex],'pushMoney',item.pushMoney);                Vue.set(vm.productFormList[vm.productIndex],'amount',item.amount);                Vue.set(vm.productFormList[vm.productIndex],'techId','');                Vue.set(vm.productFormList[vm.productIndex],'techName','');                Vue.set(vm.productFormList[vm.productIndex],'discount',10);                if(type=='project'){                    Vue.set(vm.productFormList[vm.productIndex],'productType',1);                }else if(type=='product'){                    Vue.set(vm.productFormList[vm.productIndex],'productType',2);                }            },            async getProduct(){                vm.products = await request.fetch("/admin/product/getProduct");            },            async onload(){                vm.cardList = await api.getCardList();                vm.techList = await api.getTechnicians();                vm.getProduct();            },            clearNoNum:function(obj,index,pay) {                obj= obj.replace(/[^\d.]/g, "")                    .replace(/^0\d+|^\./g, "")                    .replace(/\.{2,}/g, ".")                    .replace(".", "$#$")                    .replace(/\./g, "")                    .replace("$#$", ".")                    .replace(/^(\d+)\.(\d\d).*$/, "$1.$2");                if(pay=='productPay'){                    vm.productPay[index].amount = obj                }                if(pay=='cardPay'){                    vm.cardPay[index].amount = obj                }            },            cardSubmit(){                if(app.isEmpty(vm.cardForm.techName)){                    app.error("请选择服务人员！"); return;                }                var pay = new Array();                for (let i of vm.cardPay){                    if(i.amount>0){                        pay.push(i);                    }                }                var data = {                    user:JSON.stringify(vm.member),                    card:JSON.stringify(vm.cardForm),                    pay:JSON.stringify(pay)                }                request.post("/admin/cashier/buildCard",data).then(res=>{                    app.success("开卡成功！")                    Object.assign(vm.$data.cardForm, vm.$options.data().cardForm);                    Object.assign(vm.$data.cardPay, vm.$options.data().cardPay);                    vm.getMemberCardList();                    vm.selectIndex = 0;                    $(window.parent.document).find('html,body').animate({scrollTop:'0px'},'100')                })            },        },        mounted:async function() {            vm = this;            vm.onload();            vm.getMemberCardList();            var iframe =  $("#iframe2", window.parent.document);            iframe.height(850);            form.render();        },        updated: function () {            form.render();        },        watch:{            member(newval){                vm.getMemberCardList();            },            selectIndex(newval){                setTimeout(function () {                    var iframe =  $("#iframe1", window.parent.document);                    iframe.height(document.body.scrollHeight+100);                },50)            },            cardPay:{                handler:function(newValue){                    //订单需要支付的钱                    var needPay = Number(vm.getBuildCardAmout);                    //ui显示的金额                    var realPay = 0;                    //ui显示的全部金额相加                    for(let pay of newValue){                        let amount = pay.amount;                        realPay = app.accAdd(realPay,amount);                    }                    //声明一个最后一个输入的下标                    var nowChoose;                    //用户改变支付方式时候才走的逻辑                    if(cardPayCopy){                        //获取用户改变的哪个支付方式                        for(let i=0;i<newValue.length;i++){                            if(cardPayCopy[i].amount!==newValue[i].amount){                                nowChoose = i;                                break;                            }                        }                        //如果实际金额小于应付金额                        if(realPay<needPay){                            //计算出来少了多少钱                            var shortfall =  app.Subtr(needPay,realPay);                            //从上到下，赋值给非用户最后输入的逻辑                            for(let i=0;i<vm.cardPay.length;i++){                                if(i!=nowChoose){                                    vm.cardPay[i].amount = app.accAdd(vm.cardPay[i].amount,shortfall);                                    break;                                }                            }                        }else  if(realPay>needPay){                            //当前用输入框输入的金额                            var nowChooseAmount = vm.cardPay[nowChoose].amount;                            //单个输入框大于needPay的时候                            if(nowChooseAmount>needPay){                                vm.cardPay[nowChoose].amount = needPay;                                for(let i=0;i<vm.cardPay.length;i++){                                    if(i!=nowChoose){                                        vm.cardPay[i].amount = '';                                    }                                }                            }else {                                //计算出来多了多少钱                                var duo  = app.Subtr(realPay,needPay);                                for(let i=0;i<vm.cardPay.length;i++){                                    if(vm.cardPay[i].amount>=duo){                                        if(i!=nowChoose) {                                            vm.cardPay[i].amount = app.Subtr(vm.cardPay[i].amount, duo);                                            if(vm.cardPay[i].amount==0){                                                vm.cardPay[i].amount='';                                            }                                            break;                                        }                                    }else {                                        if(i!=nowChoose) {                                            duo = app.Subtr(duo, vm.cardPay[i].amount);                                            vm.cardPay[i].amount = '';                                        }                                    }                                }                            }                        }                    }                    cardPayCopy = JSON.parse(JSON.stringify(newValue));                },                deep:true, //深度监听            },            productPay:{                handler:function(newValue){                    //订单需要支付的钱                    var needPay =  Number(vm.getTotalAmount);                    //ui显示的金额                    var realPay = 0;                    //ui显示的全部金额相加                    for(let pay of newValue){                        let amount = pay.amount;                        realPay = app.accAdd(realPay,amount);                    }                    //声明一个最后一个输入的下标                    var nowChoose;                    //用户改变支付方式时候才走的逻辑                    if(productPayCopy){                        //获取用户改变的哪个支付方式                        for(let i=0;i<newValue.length;i++){                            if(productPayCopy[i].amount!==newValue[i].amount){                                nowChoose = i;                                break;                            }                        }                        if(vm.memberCard.amount!=undefined){                            //如果是卡金不够支付                            if(vm.productPay[0].amount>=vm.memberCard.amount){                                vm.productPay[0].amount = vm.memberCard.amount;                            }else{                                vm.productPay[0].amount = needPay;                            }                            realPay = app.Subtr(realPay,vm.memberCard.amount)                            needPay = app.Subtr(needPay,vm.memberCard.amount);                        }                        //如果实际金额小于应付金额                        if(realPay<needPay){                            //计算出来少了多少钱                            var shortfall =  app.Subtr(needPay,realPay);                            //从上到下，赋值给非用户最后输入的逻辑                            for(let i=1;i<vm.productPay.length;i++){                                if(i!=nowChoose){                                    vm.productPay[i].amount = app.accAdd(vm.productPay[i].amount,shortfall);                                    break;                                }                            }                        }else  if(realPay>needPay){                            //当前用输入框输入的金额                            var nowChooseAmount = vm.productPay[nowChoose].amount;                            //单个输入框大于needPay的时候                            if(nowChooseAmount>needPay){                                vm.productPay[nowChoose].amount = needPay;                                for(let i=1;i<vm.productPay.length;i++){                                    if(i!=nowChoose){                                        vm.productPay[i].amount = '';                                    }                                }                            }else {                                //计算出来多了多少钱                                var duo  = app.Subtr(realPay,needPay);                                for(let i=1;i<vm.productPay.length;i++){                                    if(vm.productPay[i].amount>=duo){                                        if(i!=nowChoose) {                                            vm.productPay[i].amount = app.Subtr(vm.productPay[i].amount, duo);                                            if(vm.productPay[i].amount==0){                                                vm.productPay[i].amount='';                                            }                                            break;                                        }                                    }else {                                        if(i!=nowChoose) {                                            duo = app.Subtr(duo, vm.productPay[i].amount);                                            vm.productPay[i].amount = '';                                        }                                    }                                }                            }                        }                    }                    productPayCopy = JSON.parse(JSON.stringify(newValue));                },                deep:true, //深度监听            },            queryString:function (newVal) {                if(newVal){                    //搜索前清除定时器                    clearTimeout(timer);                    timer = setTimeout(function () {                        request.fetch('/admin/member/getMemberList',{                            name:newVal,                            phoneNumber:newVal                        }).then(res=>{                            vm.result.list = res;                        })                    },200)                }            }        }    })</script><% } %>
+<%
+layout("/common/_container.html"){
+%>
+<style>
+    font {
+        position: absolute;
+        bottom: 100px;
+        left: 300px;
+    }
+
+    .el-cascader-node.in-active-path, .el-cascader-node.is-active, .el-cascader-node.is-selectable.in-checked-path, .el-cascader__suggestion-item.is-checked, .el-select-dropdown__item.selected {
+        color: #d81f3e !important;
+    }
+
+    .el-cascader-menu {
+        min-width: 280px;
+    }
+
+    .el-cascader-menu__wrap {
+        height: 300px;
+        font-size: 15px;
+    }
+
+</style>
+<link rel="stylesheet" href="/modular/css/cashier.css" media="all">
+<script src='/modular/js/LodopFuncs.js'></script>
+
+<div id="app">
+    <div class="layui-card main" style="min-height:calc(90vh - 10px)">
+
+        <div>
+            <!-- 收银台tab-->
+            <div class="tabs cashier-tabs">
+                <a class="tab" :class="selectIndex==index?'active':''" v-for="(item,index) in cashierTabs"
+                   @click="selectIndex=index">
+                    {{item.title}}
+                </a>
+            </div>
+
+
+            <div style="padding: 10px;" v-if="selectIndex==0" class="container-cashier">
+                <table class="layui-table md-table ">
+                    <colgroup>
+                        <col width="5%">
+                        <col width="15.8%">
+                        <col width="15.8%">
+                        <col width="15.8%">
+                        <col width="15.8%">
+                        <col width="15.8%">
+                        <col>
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>操作</th>
+                        <th>项目/卖品</th>
+                        <th>单价</th>
+                        <th>折扣</th>
+                        <th>实际售价</th>
+                        <th>服务人员</th>
+                        <th>提成</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(productForm,index) in productFormList">
+                        <td>
+                            <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                                       @click=" delProduct(index);"></el-button>
+                        </td>
+                        <td>
+                            <el-cascader
+                                    clearable
+                                    :ref="'myCascader'+index"
+                                    @change="handleSelect($event,productForm,'myCascader'+index)"
+                                    :show-all-levels="false"
+                                    placeholder="选择项目/卖品 "
+                                    :props="{ expandTrigger: 'hover' }"
+                                    :options="products"
+                                    filterable
+                                    v-model="productForm.cascader"
+                                    :key="'myCascader'+index"
+                            >
+                                <template slot-scope="{ node, data }">
+                                    <span>  {{ data.label }}
+                                        <template v-if="node.isLeaf">
+                                            <i>{{memberCard.amount?'会员价： '+data.other.memberAmount:data.other.amount}}元</i>
+                                        </template>
+
+                                        <template v-if="node.level==3&&node.parent.parent.data.value=='product'">
+                                            <i>库存:{{data.other.count}}</i>
+                                        </template>
+                                    </span>
+                                    <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                                </template>
+                            </el-cascader>
+                        </td>
+                        <td>
+                            <el-input type="text" v-model="productForm.amount" oninput="app.clearNoNum(this)"
+                                      placeholder="原价"></el-input>
+                        </td>
+                        <td>
+                            <el-input type="text" v-model="productForm.discount" placeholder="折扣"></el-input>
+                        </td>
+                        <td>
+                            <el-input type="text"
+                                      :value="getRealAmount(productForm,productForm.amount,productForm.discount)"
+                                      oninput="app.clearNoNum(this)" placeholder="实际售价"></el-input>
+                        </td>
+                        <td>
+                            <template v-if="productForm.productType==1" >
+                                <el-select v-model="productForm.techId" placeholder="请选择" filterable
+                                           :key="'techOption'+index">
+                                    <el-option
+                                            v-for="item in techList"
+                                            :key="item.userId"
+                                            :label="item.realName"
+                                            :value="item.userId"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </template>
+
+                            <template v-if="productForm.productType==2" >
+                                <el-select multiple v-model="productForm.techId" placeholder="请选择" filterable
+                                           :key="'techOption'+index">
+                                    <el-option
+                                            v-for="item in techList"
+                                            :key="item.userId"
+                                            :label="item.realName"
+                                            :value="item.userId"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </template>
+
+                        </td>
+                        <td>
+                            <div >{{getPushMoney(productForm)}} {{productForm.techPushMoney}}</div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="layui-btn layui-btn-normal" @click="addProductForm"
+                        style="margin-top: 15px;">添加一行( F6 )
+                </button>
+                <table class="layui-table pay-table" style="margin-top: 20px;">
+                    <colgroup>
+                        <col width="10%">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td>应收金额</td>
+                        <td class="text-orange" style="font-weight: bold;">￥
+                            <span v-if="productFormList[0].amount">{{app.getFloatStr(getTotalAmount)}}</span>
+                            <span v-else>0.00</span>
+                        </td>
+                    </tr>
+
+                    <tr v-for="(pay,index) in productPay">
+                        <td>{{pay.payName}}</td>
+                        <td>
+                            <el-input placeholder="请输入金额" v-model="pay.amount" :key="index"  :readonly="getTotalAmount==0"
+                                      @input="clearNoNum(pay.amount,index,'productPay')">
+                                <template slot="append">元</template>
+                            </el-input>
+
+                            &nbsp;&nbsp;&nbsp;<button class="layui-btn layui-btn-sm" @click="posPay(pay)" v-if="pay.payType==1">付</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div style="padding: 10px;  ">
+                    <button type="button" class="layui-btn layui-btn-lg btn-color" @click="productSubmit">结算</button>
+                    <el-checkbox v-model="printchecked" style="margin-left: 20px;">打印小票</el-checkbox>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function getCascaderObj(val, opt) {
+        return val.map(function (value, index, array) {
+            for (var itm of opt) {
+                if (itm.value == value) {
+                    opt = itm.children;
+                    return itm;
+                }
+            }
+            return null;
+        });
+    }
+
+    function getSelectObj(val, opt) {
+        return opt.find(item => {
+            return item.userId === val
+        });
+    }
+
+    var productPayCopy = '';
+    var iframe = $("#iframe1", window.parent.document);
+    //创建定时器
+    var timer;
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                printchecked: false,
+                loginUser: '',
+                visible: false,
+                selectIndex: '0',
+                cashierTabs: [
+                    {title: '综合收银 ( F2 )'}
+                ],
+                //联想输入
+                queryString: '',
+                //联想输入结果
+                result: {list: []},
+                //当前选择的会员
+                member: {},
+                //member:{ "id": "ce961d0c2c21a9b2cc5ce2582d381ac5", "name": "测试会员", "sex": "1", "birthday": null, "phoneNumber": "13837520190", "address": "", "comeFrom": "6bf2f9bf0e35e5578ddecc7f2d763ed1", "deptId": "0404039033a71cb92dbf65dcc184ec90", "inviter": "", "memberStatus": 1, "remark": "", "createTime": "2020-06-29 16:55:01", "avatar": "", "inviterId": "", "userId": null, "smsAlert": "on", "openId": "" },
+                //会员拥有的卡列表
+                memberCardList: [],
+                memberCard: {},
+                //条码支付id
+                receiptId:'',
+                //商品集合
+                productFormList: [{
+                    productNo: '',
+                    id: '',
+                    name: '',
+                    amount: '',
+                    techName: '',
+                    techId: '',
+                    discount: '',
+                    realAmount: '',
+                    techPushMoney: '',
+                    productType: 1,
+                    cascader: ''
+                }],
+                products: {},
+                //技师列表
+                techList: [],
+                //支付方式
+                productPay: [
+                    {payName: '条码支付', amount: '', payType: 1},
+                    {payName: '现金', amount: '', payType: 2},
+                    {payName: '银联', amount: '', payType: 3},
+                    {payName: '其他', amount: '', payType: 4},
+                    {payName: '优惠', amount: '', payType: 5},
+                ]
+            }
+        },
+        computed: {
+            getTotalAmount() {
+                var totalAmount = 0;
+                if (vm.productFormList.length > 0 && vm.productFormList != undefined) {
+                    //计算总金额
+                    for (let item of vm.productFormList) {
+                        var realAmount = item.realAmount;
+                        if (realAmount != undefined) {
+                            totalAmount = app.accAdd(totalAmount, realAmount);
+                        }
+                    }
+
+                    //没有会员卡 支付金额赋给现金
+                    if (totalAmount > 0) {
+                        vm.productPay[0].amount = totalAmount;
+                    }
+
+                }
+                return totalAmount;
+            },
+            getBuildCardAmout() {
+                var totalAmount = 0;
+                if (app.isNotEmpty(vm.cardForm.amount)) {
+                    totalAmount = vm.cardForm.amount;
+                }
+                if (totalAmount > 0) {
+                    vm.cardPay[0].amount = totalAmount;
+                }
+                vm.techSelectMultiple(vm.cardForm,"");
+                return totalAmount;
+            },
+            getChargedAmout() {
+                var totalAmount = 0;
+                if (app.isNotEmpty(vm.chargedForm.amount)) {
+                    totalAmount = vm.chargedForm.amount;
+                }
+                if (totalAmount > 0) {
+                    vm.chargedPay[0].amount = totalAmount;
+                }
+                vm.techSelectMultiple(vm.chargedForm,"");
+                return totalAmount;
+            }
+        },
+        methods: {
+            getPushMoney(item){
+                if (app.isNotEmpty(item.techId) && app.isNotEmpty(item.cascader)) {
+                    let product = getCascaderObj(item.cascader, vm.products)[2].other;
+                    if (item.productType == 1) {
+                        let tech = getSelectObj(item.techId, vm.techList);
+                        item.techName = tech.realName;
+                        let techGrade = tech.userGrade;
+                        switch (techGrade) {
+                            case 1:
+                                item.techPushMoney = product.commonPushMoney;
+                                break;
+                            case 2:
+                                item.techPushMoney = product.highPushMoney;
+                                break;
+                            case 3:
+                                item.techPushMoney = product.topPushMoney;
+                                break;
+                            default: {
+                                item.techPushMoney = ""
+                                break;
+                            }
+                        }
+                    }
+
+                    if (item.productType == 2) {
+                        vm.techSelectMultiple(item,product);
+                    }
+                }
+            },
+            getpayChannel(code){
+                var payChannel = '';
+                var startCode = Number(code.substring(0,2));
+                if(10<=startCode&&startCode<=15){
+                    return 'WXPAY';
+                }else if(25<=startCode&&startCode<=30){
+                    return 'ALIPAY';
+                }
+            },
+            posPay(item){
+                top.layer.prompt({title: '请扫描付款码', formType: 0,btn:['支付','取消']}, function(pass, index) {
+                    var payChannel = vm.getpayChannel(pass);
+                    console.log(payChannel)
+                    request.post("/admin/cashier/pay",{
+                        amount:item.amount,
+                        authCode:pass,
+                        payChannel:payChannel
+                    }).then(res=>{
+                        app.success("支付成功！");
+                        top.layer.close(index);
+                        console.log(res);
+                        vm.receiptId = res;
+                    })
+                })
+            },
+            //选择服务人员
+            techSelect(e, productForm) {
+                let curUser = getSelectObj(e, vm.techList)
+                productForm.techName = curUser.realName;
+            },
+            //多选服务人员
+            techSelectMultiple(form,product){
+                let techIds = new Array();
+                for (let id of form.techId) {
+                    let tech = getSelectObj(id, vm.techList);
+                    techIds.push(tech.realName)
+                }
+                form.techName = techIds
+                if (form.techId.length > 0) {
+                    switch (form.productType) {
+                        case 2: {
+                            let pushPercent = app.accMul(product.pushPercent, 0.01);
+                            let pushMoney = app.accMul(form.realAmount, pushPercent);
+                            form.techPushMoney = app.accDiv(pushMoney, form.techId.length);
+                            break;
+                        }
+                        default: {
+                            let pushPercent = app.accMul(form.amount, (form.pushMoney/100));
+                            form.techPushMoney =  Math.floor(app.accDiv(pushPercent, form.techId.length)* 100) / 100;
+                            break;
+                        }
+                    }
+                }else {
+                    form.techPushMoney = ""
+                }
+
+            },
+            //选择卖品，项目
+            handleSelect(e, productForm, refsname) {
+                console.log(e);
+
+                productForm.cascader = e;
+                let item = getCascaderObj(productForm.cascader, vm.products)[2].other;
+                productForm.productNo = item.productNo;
+                productForm.id = item.id;
+                productForm.name = item.name;
+                productForm.productNo = item.productNo;
+                productForm.productNo = item.productNo;
+                if (vm.memberCard.id) {
+                    productForm.amount = item.memberAmount;
+                } else {
+                    productForm.amount = item.amount;
+                }
+                const defaultDiscount = 10;
+                console.log(e[0])
+                if (e[0] == 'project') {
+                    var projectDiscount = vm.memberCard.projectDiscount;
+                    if (projectDiscount != undefined) {
+                        productForm.discount = projectDiscount;
+                    } else {
+                        productForm.discount = defaultDiscount;
+                    }
+                    productForm.techId="";
+                    productForm.techPushMoney="";
+                    productForm.techName="";
+                    vm.isMultiple = false;
+                    productForm.productType = 1;
+                } else if (e[0] == 'product') {
+                    var goodDiscount = vm.memberCard.goodDiscount;
+                    if (goodDiscount != undefined) {
+                        productForm.discount = goodDiscount;
+                    } else {
+                        productForm.discount = defaultDiscount;
+                    }
+                    productForm.techId="";
+                    productForm.techPushMoney="";
+                    productForm.techName="";
+                    vm.isMultiple = true;
+                    productForm.productType = 2;
+
+                }
+            },
+            //每件商品的折后金额
+            getRealAmount(productForm, amount, discount) {
+                if (app.isEmpty(amount)) {
+                    return;
+                }
+                var realAmount = app.accMul(amount, app.accMul(discount, 0.1))
+                productForm.realAmount = realAmount;
+                return realAmount;
+            },
+            //提交卖品
+            productSubmit() {
+                var flag = app.ArrayObjIsNotEmpty(vm.productFormList);
+                if (!flag) {
+                    app.error("请完善表单内容~");
+                    return;
+                }
+                var pay = new Array();
+                for (let i of vm.productPay) {
+                    if (i.amount > 0) {
+                        pay.push(i);
+                    }
+                }
+                var data = {
+                    receiptId:vm.receiptId,
+                    user: JSON.stringify(vm.member),
+                    productFormList: JSON.stringify(vm.productFormList),
+                    pay: JSON.stringify(pay),
+                    sellAmount: vm.getTotalAmount,
+                    memberCard: JSON.stringify(vm.memberCard)
+                }
+                request.post("/admin/cashier/productSubmit", data).then(res => {
+                    app.success("结算成功！");
+                    vm.resetProductForm();
+                    $(window.parent.document).find('html,body').animate({scrollTop: '0px'}, '100')
+                })
+            },
+            resetProductForm() {
+                vm.productFormList = vm.$options.data().productFormList;
+                vm.productPay = vm.$options.data().productPay;
+                vm.receiptId = '';
+                vm.getProduct();
+            },
+            delProduct(index) {
+                if (vm.productFormList.length == 1) {
+                    app.error("不能再删除了~");
+                    return;
+                }
+                vm.productFormList.splice(index, 1);
+            },
+            addProductForm() {
+                var len = vm.productFormList.length;
+                if (app.isEmpty(vm.productFormList[len - 1].productNo)) {
+                    app.error("请完善上一行数据~");
+                    return;
+                }
+                vm.productFormList.push({
+                    productNo: '',
+                    id: '',
+                    name: '',
+                    amount: '',
+                    techName: '',
+                    techId: '',
+                    discount: '',
+                    realAmount: '',
+                    productType: 1,
+                    cascader: ''
+                });
+                iframe.height(iframe.height() + 100);
+            },
+            //得到smart联想输入的值
+            getItem(data) {
+                vm.member = data;
+            },
+            search(data) {
+                vm.queryString = data
+            },
+            async getProduct() {
+                vm.products = await request.fetch("/admin/product/getProduct");
+            },
+            async onload() {
+                vm.techList = await api.getTechnicians();
+                vm.loginUser = await api.getLoginUser();
+                vm.getProduct();
+            },
+            clearNoNum: function (obj, index, pay) {
+                obj = obj.replace(/[^\d.]/g, "")
+                    .replace(/^0\d+|^\./g, "")
+                    .replace(/\.{2,}/g, ".")
+                    .replace(".", "$#$")
+                    .replace(/\./g, "")
+                    .replace("$#$", ".")
+                    .replace(/^(\d+)\.(\d\d).*$/, "$1.$2");
+                if (pay == 'productPay') {
+                    vm.productPay[index].amount = obj
+                } else if (pay == 'cardPay') {
+                    vm.cardPay[index].amount = obj
+                } else if (pay == 'chargedPay') {
+                    vm.chargedPay[index].amount = obj
+                }
+            }
+        },
+        mounted: async function () {
+            vm = this;
+            vm.onload();
+            form.render();
+        },
+        updated: function () {
+            form.render();
+        },
+        watch: {
+            member(newval) {
+                vm.resetProductForm();
+                vm.resetCardForm();
+                vm.getMemberCardList();
+                iframe.height(1150);
+            },
+            selectIndex(newval) {
+                setTimeout(function () {
+                    iframe.height(document.body.scrollHeight + 100);
+                }, 50)
+            },
+            productPay: {
+                handler: function (newValue) {
+                    //订单需要支付的钱
+                    var needPay = Number(vm.getTotalAmount);
+                    if (needPay <= 0) {
+                        return;
+                    }
+                    //input显示的金额
+                    var realPay = 0;
+
+                    //ui显示的全部金额相加
+                    for (let pay of newValue) {
+                        let amount = pay.amount;
+                        realPay = app.accAdd(realPay, amount);
+                    }
+                    //声明一个最后一个输入的下标
+                    var nowChoose;
+                    //用户改变支付方式时候才走的逻辑
+                    if (productPayCopy) {
+                        //获取用户改变的哪个支付方式
+                        for (let i = 0; i < newValue.length; i++) {
+                            if (productPayCopy[i].amount !== newValue[i].amount) {
+                                nowChoose = i;
+                                break;
+                            }
+                        }
+                        console.log('needPay'+needPay);
+                        console.log('realPay'+realPay);
+                        //没有需要支付的金额 那就把所有清空
+                        if(needPay<=0){
+                            for (let i = 0; i < vm.productPay.length; i++) {
+                                vm.productPay[i].amount = '';
+                            }
+                            return;
+                        }
+
+                        //如果实际金额小于应付金额
+                        if (realPay < needPay) {
+                            //计算出来少了多少钱
+                            var shortfall = app.Subtr(needPay, realPay);
+
+                            //从上到下，赋值给非用户最后输入的逻辑
+                            for (let i = 0; i < vm.productPay.length; i++) {
+                                if (i != nowChoose) {
+                                    vm.productPay[i].amount =app.accAdd(vm.productPay[i].amount,shortfall);
+                                    break;
+                                }
+                            }
+                        } else if (realPay > needPay) {
+                            //当前用输入框输入的金额
+                            var nowChooseAmount = vm.productPay[nowChoose].amount;
+
+                            //单个输入框大于needPay的时候
+                            if (nowChooseAmount > needPay) {
+                                //当前输入框的金额为needPay
+                                vm.productPay[nowChoose].amount = needPay;
+                                //并将其他输入框的金额清空
+                                for (let i = 0; i < vm.productPay.length; i++) {
+                                    if (i != nowChoose) {
+                                        vm.productPay[i].amount = '';
+                                    }
+                                }
+                            } else {
+                                //计算出来多了多少钱
+                                var duo = app.Subtr(realPay, needPay);
+                                //从上往下开始循环
+                                for (let i = 0; i < vm.productPay.length; i++) {
+                                    //并且不是当前输入框输入的金额
+                                    if (i != nowChoose) {
+                                        //如果第一个支付的金额 大于多出来的金额
+                                        if (vm.productPay[i].amount >= duo) {
+                                            //当前输入框的金额等于 多出来的金额减去当前的金额
+                                            vm.productPay[i].amount = app.Subtr(vm.productPay[i].amount, duo);
+                                            //恰好可以减去那么将值设置为空
+                                            if(vm.productPay[i].amount==0){
+                                                vm.productPay[i].amount=='';
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                //如果输入框的每一项都不大于多出来的金额
+                                //继续循环 金额由上至下减少 直到多出来的减完
+                                for (let i = 0; i < vm.productPay.length; i++) {
+                                    //并且不是当前输入框输入的金额
+                                    if (i != nowChoose) {
+                                        duo = app.Subtr(vm.productPay[i].amount, duo);
+                                        if(duo==0){
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    productPayCopy = JSON.parse(JSON.stringify(newValue));
+                },
+                deep: true, //深度监听
+            }, queryString: function (newVal) {
+                if (newVal) {
+                    //搜索前清除定时器
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        request.fetch('/admin/member/getMemberList', {
+                            name: newVal,
+                            phoneNumber: newVal,
+                            deptId: vm.loginUser.deptId
+                        }).then(res => {
+                            vm.result.list = res;
+                        })
+                    }, 200)
+                }
+            }
+        }
+    })
+
+    function print(type) {
+        var LODOP = getLodop();
+        LODOP.PRINT_INIT("测试打印");               //首先一个初始化语句
+        LODOP.SET_PRINT_PAGESIZE(3, "58mm", "10mm", "CreateCustomPage");
+        LODOP.SET_PRINT_STYLE("FontSize", 13); //字体大小
+        LODOP.ADD_PRINT_TEXT(20, 52, 148, 20, "舍艺修脚");//然后多个ADD语句及SET语句
+        LODOP.SET_PRINT_STYLE("FontSize", 11); //字体大小
+        LODOP.ADD_PRINT_TEXT(45, 50, 150, 20, "会员消费单");//然后多个ADD语句及SET语句
+        LODOP.SET_PRINT_STYLE("FontSize", 8); //字体大小
+        LODOP.ADD_PRINT_TEXT(60, 5, 250, 20, "--------------------------------");//然后多个ADD语句及SET语句
+
+
+        //循环体距离顶部的距离
+        var topPosition = 90;
+        var articleSize = 0;
+        var linehight = 0;
+        if (type == 1) {
+            LODOP.ADD_PRINT_TEXT(85, 5, 180, 20, "消费类型：" + "项目/卖品");//然后多个ADD语句及SET语句
+            articleSize = 0;
+            linehight = 60;
+            for (let good of vm.productFormList) {
+                articleSize++;
+                console.log(good);
+                LODOP.ADD_PRINT_TEXT(topPosition + (articleSize * linehight) - 40, 5, 180, 20, "项目：" + good.name);//然后多个A
+                // DD语句及SET语句
+                LODOP.ADD_PRINT_TEXT(topPosition + (articleSize * linehight) - 20, 5, 180, 20, "价格：" + good.amount);//然后多个ADD语句及SET语句
+                if (good.discount > 0) {
+                    LODOP.ADD_PRINT_TEXT(topPosition + (articleSize * linehight) - 20, 70, 180, 20, "折扣：" + good.discount);//然后多个ADD语句及SET语句
+                }
+                LODOP.ADD_PRINT_TEXT(topPosition + (articleSize * linehight), 5, 180, 20, "实付：" + good.realAmount);//然后多个ADD语句及SET语句
+            }
+        }
+
+
+        var downPosition = topPosition + (articleSize * linehight);
+        LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 180, 20, "总价：" + app.getFloatStr(vm.getTotalAmount));//然后多个ADD语句及SET语句
+        LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 180, 20, "付款方式-------------------");
+        for (let productPay of vm.productPay) {
+            if (productPay.amount > 0) {
+                LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 220, 20, "付款方式：" + productPay.payName);
+                LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 220, 20, "付款金额：" + productPay.amount);
+            }
+        }
+        LODOP.SET_PRINT_STYLE("FontSize", 8); //字体大小
+        if (app.isNotEmpty(vm.memberCard.amount != undefined)) {
+            LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 220, 20, "会员卡余额：" + vm.memberCard.amount);
+        }
+        LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 220, 20, "消费时间：" + app.getCurentTime());
+        LODOP.ADD_PRINT_TEXT(downPosition += 20, 5, 250, 20, "--------------------------------");//然后多个ADD语句及SET语句
+        LODOP.ADD_PRINT_TEXT(downPosition += 20, 50, 250, 20, "祝您生活愉快");//然后多个ADD语句及SET语句
+        LODOP.SET_PRINT_STYLEA(0, "Stretch", 2);//按原图比例(不变形)缩放模式
+        // LODOP.PREVIEW();//打印预览
+        LODOP.PRINT();
+    }
+
+    //搜索框回车事件
+    $(document).on('keydown', function (event) {
+        if (event.keyCode == 113) {
+            vm.selectIndex = '0';
+            return false;
+        }
+        if (event.keyCode == 114) {
+            vm.selectIndex = '1';
+            return false;
+        }
+        if (event.keyCode == 115) {
+            vm.selectIndex = '2';
+            return false;
+        }
+        if (event.keyCode == 117) {
+            vm.addProductForm();
+            return false;
+        }
+    });
+
+</script>
+
+<% } %>
