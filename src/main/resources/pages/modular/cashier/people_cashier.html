@@ -462,9 +462,7 @@ layout("/common/_container.html"){
                 }
                 request.post("/admin/cashier/productSubmit", data).then(res => {
                     app.success("结算成功！");
-                    vm.getMemberCardList().then(res => {
-                        vm.resetProductForm();
-                    })
+                    vm.resetProductForm();
                     $(window.parent.document).find('html,body').animate({scrollTop: '0px'}, '100')
                 })
             },
