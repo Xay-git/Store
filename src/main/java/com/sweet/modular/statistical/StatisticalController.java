@@ -1,6 +1,7 @@
 package com.sweet.modular.statistical;
 
 import com.sweet.core.model.ResultBean;
+import com.sweet.core.util.Pinyin4j;
 import com.sweet.modular.card.entity.Card;
 import com.sweet.modular.card.service.CardService;
 import com.sweet.modular.membercard.service.MembercardService;
@@ -8,8 +9,11 @@ import com.sweet.modular.sell.service.SellService;
 import com.sweet.modular.selldetail.service.SelldetailService;
 import com.sweet.modular.statistical.model.CardDateDetails;
 import com.sweet.modular.statistical.model.CardStatistical;
+import com.sweet.modular.statistical.model.CategoryStatistical;
+import com.sweet.modular.statistical.service.StatisticalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -29,7 +33,8 @@ public class StatisticalController {
 
     @Autowired
     MembercardService membercardService;
-
+    @Autowired
+    StatisticalService statisticalService;
     @Autowired
     CardService cardService;
     @Autowired
@@ -58,8 +63,8 @@ public class StatisticalController {
         List<CardStatistical> cardStatisticalList  = new ArrayList<>();
         for (Card c : list) {
             CardStatistical caed = new CardStatistical();
-            CardStatistical s = sellService.findSelltypeByid(1,c.getId(),beginTime,endTime);
-            CardStatistical g = sellService.findSelltypeByid(2,c.getId(),beginTime,endTime);
+            CardStatistical s = sellService.findSelltypeByid(1,c.getId(),null,beginTime,endTime);
+            CardStatistical g = sellService.findSelltypeByid(2,c.getId(),null,beginTime,endTime);
             List<CardDateDetails> Detailslist = new ArrayList<>();
             Detailslist.addAll(s.getCardDateDetailsList());
             Detailslist.addAll(g.getCardDateDetailsList());
@@ -89,5 +94,11 @@ public class StatisticalController {
             cardStatisticalList.add(caed);
         }
         return ResultBean.success(0, "success", cardStatisticalList);
+    }
+    @RequestMapping("/CategoryStatistical")
+    @ResponseBody
+    public ResultBean CategoryStatistical(Integer type,String beginTime, String endTime) {
+        List<CategoryStatistical> list = statisticalService.findCategoryStatistical(type,beginTime,endTime);
+        return ResultBean.success(0, "success", list);
     }
 }

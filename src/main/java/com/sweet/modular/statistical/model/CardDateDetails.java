@@ -23,7 +23,7 @@ public class CardDateDetails {
     //开卡 or 续卡
     private Integer selltype;
 
-    //日期
+    //排序日期
     private Date datedesc;
 
 }

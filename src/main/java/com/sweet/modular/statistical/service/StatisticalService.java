@@ -1,13 +1,11 @@
 package com.sweet.modular.statistical.service;
 
-import com.sweet.core.model.system.LayuiPageInfo;
-import com.sweet.modular.category.entity.Category;
+import com.sweet.modular.statistical.model.CategoryStatistical;
+import com.sweet.modular.statistical.service.impl.StatisticalServiceImpl;
 
-/**
- *
- * @author
- */
-public class StatisticalService {
+import java.util.List;
+import java.util.Map;
 
-
+public interface StatisticalService{
+    List<CategoryStatistical> findCategoryStatistical(Integer type,String beginTime, String endTime);
 }

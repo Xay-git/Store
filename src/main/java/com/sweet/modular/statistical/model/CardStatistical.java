@@ -23,7 +23,7 @@ public class CardStatistical {
     private BigDecimal chargedAmount;
     //续卡赠送总额
     private BigDecimal chargedGiveAmount;
-
+    //明细
     private List<CardDateDetails> cardDateDetailsList;
 
 }
