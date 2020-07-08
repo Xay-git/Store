@@ -89,6 +89,7 @@
                               @input="clearNoNum(pay.amount,index,'cardPay')">
                         <template slot="append">元</template>
                     </el-input>
+                    <button class="layui-btn layui-btn-sm" @click="posPay(pay)" v-if="pay.payType==1">付</button>
                 </td>
             </tr>
             </tbody>
