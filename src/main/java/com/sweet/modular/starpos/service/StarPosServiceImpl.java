@@ -35,13 +35,12 @@ public class StarPosServiceImpl implements StarPosService{
         barcodePosPay.setMercId(mercId);
         barcodePosPay.setTrmNo(StarPosUtil.trmNo);
 
-
         barcodePosPay.setAmount(amount);
         barcodePosPay.setTotal_amount(amount);
         barcodePosPay.setAuthCode(authCode);
         barcodePosPay.setPayChannel(payChannel);
         barcodePosPay.setTradeNo(IdWorker.get32UUID());
-        barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
+         barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
         return barcodePosPay;
     }
 

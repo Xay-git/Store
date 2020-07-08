@@ -28,10 +28,13 @@ public class StarPosController {
      */
     @PostMapping(value = "/notify")
     public ResultBean notify(@RequestBody Map<String,String> map, HttpServletResponse httpServletResponse) throws Exception {
-        String tradeNo =map.get("TxnLogId");
-        Receipt receipt = receiptService.getReceiptByTradeNo(tradeNo);
         String TxnCode =  map.get("TxnCode");
         String TxnStatus = map.get("TxnStatus");
+        String orderNo =map.get("OfficeId");
+
+
+        Receipt receipt = receiptService.getReceiptByOrderNo(orderNo);
+
 
         if(TxnCode.equals(StarPosService.TxnCode_scanPhone)){
             if(TxnStatus.equals("1")){
