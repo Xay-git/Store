@@ -18,10 +18,7 @@ public class StarPosUtil {
      * 沙箱环境url
      */
     public static final String sandboxUrl = "http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkBarcodePay.json";
-    /**
-     * 设备号
-     */
-    public static final String trmNo = "XB938277";
+
 
 
     /**

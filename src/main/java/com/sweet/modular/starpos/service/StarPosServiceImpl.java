@@ -5,11 +5,14 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.sweet.core.shiro.ShiroKit;
 import com.sweet.core.util.HttpClientUtil;
 import com.sweet.core.util.StringUtil;
 import com.sweet.modular.starpos.model.BarcodePosPay;
 import com.sweet.modular.starpos.model.RefundBarcodePay;
 import com.sweet.modular.starpos.util.StarPosUtil;
+import com.sweet.system.entity.Dept;
+import com.sweet.system.service.DeptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,13 +30,19 @@ public class StarPosServiceImpl implements StarPosService{
     @Value("${starpos.signkey}")
     public String singkey;
 
+    @Autowired
+    DeptService deptService;
+
 
     @Override
     public BarcodePosPay buildPay(String amount, String authCode, String payChannel) {
         BarcodePosPay barcodePosPay = new BarcodePosPay();
         barcodePosPay.setOrgNo(orgNo);
         barcodePosPay.setMercId(mercId);
-        barcodePosPay.setTrmNo(StarPosUtil.trmNo);
+
+        String deptId = ShiroKit.getUser().getDeptId();
+        Dept dept = deptService.getById(deptId);
+        barcodePosPay.setTrmNo(dept.getTrmNo());
 
         barcodePosPay.setAmount(amount);
         barcodePosPay.setTotal_amount(amount);
@@ -58,7 +67,9 @@ public class StarPosServiceImpl implements StarPosService{
         RefundBarcodePay barcodePosPay = new RefundBarcodePay();
         barcodePosPay.setOrgNo(orgNo);
         barcodePosPay.setMercId(mercId);
-        barcodePosPay.setTrmNo(StarPosUtil.trmNo);
+        String deptId = ShiroKit.getUser().getDeptId();
+        Dept dept = deptService.getById(deptId);
+        barcodePosPay.setTrmNo(dept.getTrmNo());
 
         barcodePosPay.setTradeNo(IdWorker.get32UUID());
         barcodePosPay.setTxnTime(StringUtil.getDateStringNow());
