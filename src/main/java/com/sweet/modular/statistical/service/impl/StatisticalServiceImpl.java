@@ -115,48 +115,45 @@ public class StatisticalServiceImpl implements StatisticalService {
 
     @Override
     public List<UserTechStatistical> findUserTechStatistical(String userId, String username, int type,String beginTime, String endTime) {
-        //销售关系list
-        List<Map> list = detailTechMapper.findAllTech(userId,beginTime,endTime);
+        //技师的所有type 销售详情
+        List<Map> list = detailTechMapper.findAllTech(userId,type,beginTime,endTime);
+        //商品表集合
+        List<Product> productList = productService.list();
+
         List<UserTechStatistical> list1 = new ArrayList<>();
-
-        UserTechStatistical userTech = new UserTechStatistical();
+        //总量
         int count1 = 0;
-        int count2 = 0;
-        int count3 = 0;
-        //男客
-        int man1 = 0;
-        int man2 = 0;
-        int man3 = 0;
-        //女客
-        int woman1 = 0;
-        int woman2 = 0;
-        int woman3 = 0;
-        //散客
-        int userFit1 = 0;
-        int userFit2 = 0;
-        int userFit3 = 0;
-        //总金额
-        BigDecimal productAmount1 = new BigDecimal(0);
-        BigDecimal productAmount2 = new BigDecimal(0);
-        BigDecimal productAmount3 = new BigDecimal(0);
 
-        List<CategoryStatisticalList> statisticalList = new ArrayList<>();
-        for (Map map : list) {
-            switch ((int) map.get("sellType")) {
-                case 1: {
-                    count1 += 1;
-                    productAmount1 = BigDecimalUtil.add(productAmount1, (BigDecimal) map.get("amount"));
+        for (Product p : productList) {
+            UserTechStatistical userTech = new UserTechStatistical();
+            //个数
+            int count = 0;
+            //商品总金额
+            BigDecimal productAmount = new BigDecimal(0);
+            //男客
+            int man = 0;
+            //女客
+            int woman = 0;
+            //散客
+            int userFit = 0;
+            userTech.setUserName(username);
+            userTech.setName(p.getName());
+
+            for (Map map : list) {
+                if(p.getId().equals(map.get("productId"))){
+                    count+=1;
+                    productAmount = BigDecimalUtil.add(productAmount, (BigDecimal) map.get("amount"));
                     if (map.get("memberId") == null) {
-                        userFit1 += 1;
+                        userFit += 1;
                     } else {
                         Member m = memberService.query().eq("ID", map.get("memberId")).one();
                         switch (m.getSex()) {
                             case "1": {
-                                man1 += 1;
+                                man += 1;
                                 break;
                             }
                             case "2": {
-                                woman1 += 1;
+                                woman += 1;
                                 break;
                             }
                             default: {
@@ -164,131 +161,27 @@ public class StatisticalServiceImpl implements StatisticalService {
                             }
                         }
                     }
-                    break;
                 }
-                case 2: {
-                    count2 += 1;
-                    productAmount2 = BigDecimalUtil.add(productAmount2, (BigDecimal) map.get("amount"));
-                    if (map.get("memberId") == null) {
-                        userFit2 += 1;
-                    } else {
-                        Member m = memberService.query().eq("ID", map.get("memberId")).one();
-                        switch (m.getSex()) {
-                            case "1": {
-                                man2 += 1;
-                                break;
-                            }
-                            case "2": {
-                                woman2 += 1;
-                                break;
-                            }
-                            default: {
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-                case 3: {
+            }
 
-                    CategoryStatisticalList categoryStatisticalList = new CategoryStatisticalList();
+//            count1 =count;
+            count1 += count;
+            userTech.setNumber(count);
+            userTech.setAmount(productAmount);
+            userTech.setMan(man);
+            userTech.setWoman(woman);
+            userTech.setUserFalse(userFit);
+            userTech.setSelltype(p.getProductType());
 
-                    List<Map> mapList = sellMapper.findSelltypeByid(3, null, (Long) map.get("productId"), null, null);
-                    //商品总金额
-                    BigDecimal productAmount = new BigDecimal(0);
-                    //男客
-                    int man = 0;
-                    //女客
-                    int woman = 0;
-                    //散客
-                    int userFit = 0;
-                    for (Map maps : mapList) {
-                        productAmount = BigDecimalUtil.add(productAmount, (BigDecimal) maps.get("amount"));
-                        //会员信息
-                        if (maps.get("memberId") == null) {
-                            userFit += 1;
-                        } else {
-                            Member m = memberService.query().eq("ID", maps.get("memberId")).one();
-                            switch (m.getSex()) {
-                                case "1": {
-                                    man += 1;
-                                    break;
-                                }
-                                case "2": {
-                                    woman += 1;
-                                    break;
-                                }
-                                default: {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    count3 = mapList.size();
-                    //不同商品的总金额 相加
-                    productAmount3 = BigDecimalUtil.add(productAmount3, productAmount);
-                    categoryStatisticalList.setName((String) map.get("name"));
-                    categoryStatisticalList.setCount(mapList.size());
-                    categoryStatisticalList.setCountAmount(productAmount);
-                    categoryStatisticalList.setAmount((BigDecimal) map.get("amount"));
-                    categoryStatisticalList.setMemberAmount((BigDecimal) map.get("memberAmount"));
-                    categoryStatisticalList.setMan(man);
-                    categoryStatisticalList.setWoman(woman);
-                    categoryStatisticalList.setUserFalse(userFit);
-                    statisticalList.add(categoryStatisticalList);
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
-        int count = count1+count2+count3;
-        switch (type) {
-            case 1: {
-                userTech.setUserName(username);
-                userTech.setName("开卡");
-                userTech.setTechCount(count);
-                userTech.setNumber(count1);
-                userTech.setSelltype(1);
-                userTech.setAmount(productAmount1);
-                userTech.setMan(man1);
-                userTech.setWoman(woman1);
-                userTech.setUserFalse(userFit1);
+            //只显示卖出的商品项
+            if(count>0){
                 list1.add(userTech);
-                break;
             }
-            case 2: {
-                userTech.setUserName(username);
-                userTech.setName("续卡");
-                userTech.setTechCount(count);
-                userTech.setNumber(count2);
-                userTech.setSelltype(2);
-                userTech.setAmount(productAmount2);
-                userTech.setMan(man2);
-                userTech.setWoman(woman2);
-                userTech.setUserFalse(userFit2);
-                list1.add(userTech);
-                break;
+            //给每一个商品都添加一个  所有商品的售出总量 前台自己会把总量列合并
+            for(UserTechStatistical u:list1){
+                u.setTechCount(count1);
             }
-            case 3: {
-                for (CategoryStatisticalList c: statisticalList){
-                    userTech.setUserName(username);
-                    userTech.setName(c.getName());
-                    userTech.setTechCount(count);
-                    userTech.setNumber(c.getCount());
-                    userTech.setSelltype(3);
-                    userTech.setAmount(c.getCountAmount());
-                    userTech.setMan(c.getMan());
-                    userTech.setWoman(c.getWoman());
-                    userTech.setUserFalse(c.getUserFalse());
-                    list1.add(userTech);
-                }
-                break;
-            }
-            default: {
-                break;
-            }
+
         }
         return list1;
     }

@@ -113,16 +113,11 @@ public class StatisticalController {
         List<User> users = userService.query().eq("ACCOUNT_STATUS",1).ne("USER_GRADE","").list();
         List<UserTechStatistical> ulist = new ArrayList<>();
         for(User u:users){
-            List<UserTechStatistical> list = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),1,beginTime,endTime);
-            List<UserTechStatistical> list1 = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),2,beginTime,endTime);
             List<UserTechStatistical> list3 = statisticalService.findUserTechStatistical(u.getUserId(),u.getRealName(),3,beginTime,endTime);
-            if(list.size()>0){
-                ulist.addAll(list);
-                ulist.addAll(list1);
+            if(list3.size()>0){
                 ulist.addAll(list3);
             }
         }
-
         return ResultBean.success(ulist);
     }
 }
