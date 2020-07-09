@@ -578,8 +578,11 @@ layout("/common/_container.html"){
                                 break;
                             }
                         }
-                        console.log('needPay'+needPay);
-                        console.log('realPay'+realPay);
+                        if(nowChoose!=undefined){
+                            nowChoose1 = nowChoose;
+                        }else{
+                            nowChoose = nowChoose1;
+                        }
                         //没有需要支付的金额 那就把所有清空
                         if(needPay<=0){
                             for (let i = 0; i < vm.productPay.length; i++) {
@@ -617,31 +620,26 @@ layout("/common/_container.html"){
                             } else {
                                 //计算出来多了多少钱
                                 var duo = app.Subtr(realPay, needPay);
+
                                 //从上往下开始循环
                                 for (let i = 0; i < vm.productPay.length; i++) {
                                     //并且不是当前输入框输入的金额
-                                    if (i != nowChoose) {
-                                        //如果第一个支付的金额 大于多出来的金额
-                                        if (vm.productPay[i].amount >= duo) {
-                                            //当前输入框的金额等于 多出来的金额减去当前的金额
-                                            vm.productPay[i].amount = app.Subtr(vm.productPay[i].amount, duo);
-                                            //恰好可以减去那么将值设置为空
-                                            if(vm.productPay[i].amount==0){
-                                                vm.productPay[i].amount=='';
+                                    if (app.isNotEmpty(vm.productPay[i].amount)) {
+                                        if(i != nowChoose){
+                                            //如果第一个支付的金额 大于多出来的金额
+                                            if (vm.productPay[i].amount >= duo) {
+                                                //当前输入框的金额等于 多出来的金额减去当前的金额
+                                                vm.productPay[i].amount = app.Subtr(vm.productPay[i].amount, duo);
+                                                //恰好可以减去那么将值设置为空
+                                                if(vm.productPay[i].amount==0){
+                                                    vm.productPay[i].amount=='';
+                                                }
+                                                break;
+                                            }else{
+                                                duo = app.Subtr(vm.productPay[i].amount, duo);
+                                                vm.productPay[i].amount='';
+                                                break;
                                             }
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                //如果输入框的每一项都不大于多出来的金额
-                                //继续循环 金额由上至下减少 直到多出来的减完
-                                for (let i = 0; i < vm.productPay.length; i++) {
-                                    //并且不是当前输入框输入的金额
-                                    if (i != nowChoose) {
-                                        duo = app.Subtr(vm.productPay[i].amount, duo);
-                                        if(duo==0){
-                                            break;
                                         }
                                     }
                                 }
